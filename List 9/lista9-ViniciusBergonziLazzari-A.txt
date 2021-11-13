@@ -1,0 +1,171 @@
+;; Nome: Vinícius Bergonzi Lazzari
+;; Lista 9
+
+;;;;;;;;;;;;;;; EXERCÍCIO 1 ;;;;;;;;;;;;;;;;;
+
+;; Um elemento do conjunto Data é um elemento do cjto. NumerosInteiros
+
+;; d1<=d2? : Data Data -> Boolean
+;; Dadas 2 datas (apenas o ano), verifica se a primeira é menor ou igual a segunda
+;; Exemplos:
+;: (d1<=d2? 2014 2014) = true
+;; (d1<=d2? 2014 2013) = false
+
+;; Corpo da função
+(define (d1<=d2? d1 d2)
+  (or (< d1 d2) (= d1 d2))
+)
+
+;; Testes
+(check-expect (d1<=d2? 2002 2002) true)
+(check-expect (d1<=d2? 2002 2001) false)
+(check-expect (d1<=d2? 2002 2003) true)
+
+;;;;;;;;;;;;;;; EXERCÍCIO 2 ;;;;;;;;;;;;;;;;;
+
+(define-struct filho (pai mãe nome data olhos))
+;; Um elemento nó de um conjunto Nó (de uma árvore genealógica) é:
+;; 1. empty, representando a falta de informação ou
+;; 2. (make-pessoa p m n d o), onde:
+;;   p: Pessoa, representando o pai da pessoa
+;;   m: Pessoa, representando a mãe da pessoa
+;;   n: String, representando o nome da pessoa 
+;;   d: Número, representando o ano de nascimento da pessoa
+;;   o: String, representando a cor dos olhos da pessoa
+
+(define Althea (make-filho empty empty "Althea" 1915 "brown"))
+(define Jack (make-filho empty empty "Jack" 1948 "brown"))
+(define Judy (make-filho empty Althea "Judy" 1945 "green"))
+(define Monica (make-filho Jack Judy "Monica" 1968 "blue"))
+(define Ross (make-filho Jack Judy "Ross" 1966 "brown"))
+(define Sandra (make-filho empty empty "Sandra" 1947 "brown"))
+(define Leonard (make-filho empty empty "Leonard" 1947 "brown"))
+(define Rachel (make-filho Leonard Sandra "Rachel" 1969 "blue"))
+(define Nora (make-filho empty empty "Nora" 1948 "blue"))
+(define Charles (make-filho empty empty "Charles" 1948 "blue"))
+(define Chandler (make-filho Charles Nora "Chandler" 1966 "blue"))
+(define GloriaTribbiani (make-filho empty empty "GloriaTribbiani" 1950 "brown"))
+(define MrTribbiani (make-filho empty empty "MrTribbiani" 1949 "brown"))
+(define Joey (make-filho MrTribbiani GloriaTribbiani "Joey" 1969 "brown"))
+(define Frank (make-filho empty empty "Frank" 1940 "brown"))
+(define LilyBuffay (make-filho empty empty "LilyBuffay" 1940 "blue"))
+(define Phoebe (make-filho Frank LilyBuffay "Phoebe" 1965 "blue"))
+(define Carol (make-filho empty empty "Carol" 1965 "blue"))
+(define Ben (make-filho Ross Carol "Ben" 1994 "blue"))
+(define Emma (make-filho Ross Rachel "Emma" 2002 "blue"))
+
+;;;;;;;;;;;;;;; EXERCÍCIO 3 ;;;;;;;;;;;;;;;;;
+
+;; maisIdoso : Pessoa -> Pessoa
+;; Dada uma pessoa, retorna seu ancestral com o menor ano de nascimento.
+;; Exemplos:
+;: (maisIdoso Leonard) = (make-filho empty empty "Leonard" 1947 "brown")
+;; (maisIdoso Leonard) = (make-filho empty empty "Frank" 1940 "brown")
+
+;; Corpo da função
+(define (maisIdoso pessoa) 
+  (cond
+    ;; Se a pessoa não tiver nem pai nem mãe, ela é a mais antiga daquele ramo
+    [(and (empty? (filho-pai pessoa)) (empty? (filho-mãe pessoa))) pessoa]
+    ;; Se a pessoa não tiver mãe, retorna seu pai
+    [(empty? (filho-mãe pessoa)) (filho-pai pessoa)]
+    ;; Se a pessoa não tiver pai, retorna sua mãe
+    [(empty? (filho-pai pessoa)) (filho-mãe pessoa)]
+    ;; Senão
+    [else
+      (cond
+        ;; Se o ancestral mais antigo do pai for mais antigo que o da mãe, retorna o do pai
+        [(d1<=d2? 
+          (filho-data (maisIdoso (filho-pai pessoa)))
+          (filho-data (maisIdoso (filho-mãe pessoa)))
+         )
+         (maisIdoso (filho-pai pessoa))
+        ]
+        ;; Senão, retorna o da mãe
+        [else (maisIdoso (filho-mãe pessoa))]
+      )
+    ]
+  )
+)
+
+;; Testes
+(check-expect (maisIdoso Althea) Althea)
+(check-expect (maisIdoso Joey) MrTribbiani)
+(check-expect (maisIdoso Emma) Althea)
+
+;;;;;;;;;;;;;;; EXERCÍCIO 4 ;;;;;;;;;;;;;;;;;
+
+(define-struct nó (id conteúdo esq dir))
+;; Um elemento do conjunto AB (Árvore Binária) pode ser
+;; 1. empty , representando a falta de informação, ou
+;; 2. (make-nó id c e d)
+;; onde:
+;; id : Número, representa o identificador do nó
+;; c : String, representa o conteúdo do nó
+;; e : AB, representa a sub-árvore da esquerda
+;; d : AB, representa a sub-árvore da direita
+
+(define n6 (make-nó 6 11 empty empty))
+(define n5 (make-nó 4 20 empty empty))
+(define n4 (make-nó 5 15 n6 empty))
+(define n3 (make-nó 3 17 n4 n5))
+(define n2 (make-nó 2 3 empty empty))
+(define n1 (make-nó 1 10 n2 n3))
+
+(define n11 (make-nó 4 16 empty empty))
+(define n10 (make-nó 5 15 empty empty))
+(define n9 (make-nó 3 17 n10 n11))
+(define n8 (make-nó 2 3 empty empty))
+(define n7 (make-nó 1 10 n8 n9))
+
+;; é-abp? : AB -> Boleano
+;; Dada uma arvore binária, retorna se ela é uma árvore binária de pesquisa.
+;; Exemplos:
+;: (é-abp? (make-nó 1 10 empty empty)) = true
+;; (é-abp? (make-nó 1 10 (make-nó 2 57 empty empty) empty)) = false
+
+;; Corpo da função
+(define (é-abp? nó)
+  (cond
+    ;; Se o nó não conter nenhum outro nó abaixo dele, retorna true
+    [(and (empty? (nó-esq nó)) (empty? (nó-dir nó))) true]
+    ;; Se o nó não possuir uma remificação para a esquerda
+    [(empty? (nó-esq nó))
+      (cond
+        ;; Verifica se o conteúdo do nó da direita é menor ou igual ao nó atual, se for, retorna false
+        [(d1<=d2? (nó-conteúdo (nó-dir nó)) (nó-conteúdo nó)) false]
+        ;; Senão verifica a arvoré do nó da direira
+        [else (é-abp? (nó-dir nó))]
+      )
+    ]
+    ;; Se o nó não possuir uma remificação para a direita
+    [(empty? (nó-dir nó))       
+      (cond
+        ;; Verifica se o conteúdo do nó da esquerda é maior ou igual ao nó atual, se for, retorna false
+        [(d1<=d2? (nó-conteúdo nó) (nó-conteúdo (nó-esq nó))) false]
+        ;; Senão verifica a arvoré do nó da esquerda
+        [else (é-abp? (nó-esq nó))]
+      )
+    ]
+    ;; Senão
+    [else
+      (cond
+        ;; Se o nó da direita for menor ou igual ao nó atual ou o nó da esquerda for maior ou igual ao nó atual, retorna falso
+        [(or 
+          (d1<=d2? (nó-conteúdo (nó-dir nó)) (nó-conteúdo nó)) 
+          (d1<=d2? (nó-conteúdo nó) (nó-conteúdo (nó-esq nó)))
+         ) 
+         false
+        ]
+        ;; Senão, verifica se ambas as ramificações direita e esuqerda são árvores de pesquisa
+        [else (and (é-abp? (nó-esq nó)) (é-abp? (nó-dir nó)))]
+      )
+    ]
+  )
+)
+
+;;Testes
+(check-expect (é-abp? (make-nó 1 10 (make-nó 2 4 empty empty) (make-nó 2 12 empty empty))) true)
+(check-expect (é-abp? (make-nó 1 10 (make-nó 2 4 empty empty) (make-nó 2 8 empty empty))) false)
+(check-expect (é-abp? n1) true)
+(check-expect (é-abp? n7) false)

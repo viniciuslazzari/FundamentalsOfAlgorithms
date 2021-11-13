@@ -1,0 +1,643 @@
+;; Nome: Vinícius Bergonzi Lazzari
+
+;; ========================================================================
+;; QUESTÃO 1
+;; ========================================================================
+
+;; Constante PULA_VEZ:
+(define PULA_VEZ 10)
+
+;; Constante COMPRA2:
+(define COMPRA2 11)
+
+;; Constante INVERTE:
+(define INVERTE 12)
+
+;; Constante CURINGA:
+(define CURINGA 13)
+
+;; Constante CURINGA_COMPRA4:
+(define CURINGA_COMPRA4 14)
+
+;; ========================================================================
+;; QUESTÃO 2
+;; ========================================================================
+
+;; -----------------
+;; TIPO CARTA:
+;; -----------------
+(define-struct carta (cor valor))
+;; Um elemento carta do conjunto Carta é uma estrutura
+;; (make-carta uma-cor um-valor), onde:
+;; uma-cor: String, é a cor da carta, que pode ser "azul", "verde", 
+;; "amarelo", "vermelho" ou "preto" (ou "livre" - ver questão 4)
+;; um-valor: Número, é o valor da carta, (0 a 9) para cartas normais,
+;; (10 a 14) para cartas especiais e 15 para livre
+
+;; Exemplos de constantes do tipo Carta:
+(define CARTA1 (make-carta "verde" 0))
+(define CARTA2 (make-carta "azul" 8))
+(define CARTA3 (make-carta "preto" 14))
+(define CARTA4 (make-carta "vermelho" 10))
+
+;; ========================================================================
+;; QUESTÃO 3
+;; ========================================================================
+
+;; jogada-válida? : Carta Carta -> Boleano
+;; Dadas duas Cartas representando respectivamente a carta
+;; da mesa e a da mão de um jogador, retorna se é válido jogar
+;; a carta da mão em seguida.
+;; Exemplos: 
+;; (jogada-válida? (make-carta "verde" 0) (make-carta "verde" 8)) = true
+;; (jogada-válida? (make-carta "azul" 7) (make-carta "vermelho" 7)) = true
+;; (jogada-válida? (make-carta "preta" 13) (make-carta "azul" 2)) = true
+;; (jogada-válida? (make-carta "azul" 1) (make-carta "vermelho" 2)) = false
+
+;; Código
+(define 
+    (jogada-válida? carta_mesa carta_mao) 
+    (cond
+        ;; Caso a mão esteja livre, retorna falso
+        [(= (carta-valor carta_mao) LIVRE) false]
+        ;; Caso a carta seja preta, retorna verdadeiro
+        [(string=? (carta-cor carta_mao) "preto") true]
+        ;; Caso as duas cartas possuam a mesma cor, retorna verdadeiro
+        [(string=? (carta-cor carta_mesa) (carta-cor carta_mao)) true]
+        ;; Caso as duas cartas possuam o mesmo número, retorna verdadeiro
+        [(= (carta-valor carta_mesa) (carta-valor carta_mao)) true]
+        ;; Caso a carta da mesa seja preta, retorna verdadeiro
+        [(string=? (carta-cor carta_mesa) "preto") true]
+        ;; Senão, retorna falso
+        [else false]
+    )
+)
+
+;; Testes
+(check-expect (jogada-válida? (make-carta "azul" 11) (make-carta "azul" 4)) true)
+(check-expect (jogada-válida? (make-carta "azul" 8) (make-carta "vermelho" 1)) false)
+(check-expect (jogada-válida? (make-carta "verde" 2) (make-carta "vermelho" 2)) true)
+(check-expect (jogada-válida? (make-carta "preto" 13) (make-carta "amarela" 11)) true)
+
+;; ========================================================================
+;; QUESTÃO 4
+;; ========================================================================
+
+;; Constante LIVRE:
+(define LIVRE 15)
+
+;; -----------------
+;; TIPO MÃO:
+;; -----------------
+
+(define-struct mão (carta1 carta2 carta3 carta4))
+;; Um elemento do conjunto Mão é uma estrutura
+;; (make-mão uma-carta1 uma-carta2 uma-carta3 uma-carta4), onde:
+;; uma-carta1: Carta, é a a carta 1 da mão do jogador
+;; uma-carta2: Carta, é a a carta 2 da mão do jogador
+;; uma-carta3: Carta, é a a carta 3 da mão do jogador
+;; uma-carta4: Carta, é a a carta 4 da mão do jogador
+
+;; Exemplos de constantes do tipo Mão:
+(define MÃO1 
+    (make-mão
+        (make-carta "verde" 1)
+        (make-carta "azul" 2)
+        (make-carta "vermelho" 1)
+        (make-carta "amarelo" 8)
+    )
+)
+(define MÃO2
+    (make-mão
+        (make-carta "vermelho" 1)
+        (make-carta "vermelho" 2)
+        (make-carta "vermelho" 3)
+        (make-carta "vermelho" 4)
+    )
+)
+(define MÃO3 
+    (make-mão
+        (make-carta "preto" 14)
+        (make-carta "preto" 13)
+        (make-carta "vermelho" 15)
+        (make-carta "vermelho" 8)
+    )
+)
+(define MÃO4
+    (make-mão
+        (make-carta "verde" 15)
+        (make-carta "azul" 15)
+        (make-carta "vermelho" 15)
+        (make-carta "amarelo" 15)
+    )
+)
+
+;; ========================================================================
+;; QUESTÃO 5
+;; ========================================================================
+
+;; carta-livre? : Carta -> Número
+;; Dada uma carta, retorna 1 se ela é livre ou 0 se ela não for
+;; Exemplos: 
+;; (carta-livre? (make-carta "verde" 0)) = 0
+;; (carta-livre? (make-carta "preta" 14)) = 0
+;; (carta-livre? (make-carta "vermelho" 15)) = 1
+
+;; Código
+(define 
+    (carta-livre? carta) 
+    (cond
+        ;; Caso o numero da carta seja igual a constante LIVRE
+        ;; que defin e o valor dar cartas livres, retorna 1
+        [(= (carta-valor carta) LIVRE) 1]
+        ;; Senão, retorna 0
+        [else 0]
+    )
+)
+
+;; Testes
+(check-expect (carta-livre? (make-carta "azul" 4)) 0)
+(check-expect (carta-livre? (make-carta "amarelo" 13)) 0)
+(check-expect (carta-livre? (make-carta "vermelho" 15)) 1)
+
+;; conta-cartas : Mão -> Número
+;; Dada uma mão, retorna a quantidade de cartas UNO na mão
+;; (que não sejam LIVRES)
+;; Exemplos: 
+;; (conta-cartas (make-mão (make-carta "azul" 4) (make-carta "azul" 4) (make-carta "azul" 4) (make-carta "azul" 4))) = 4
+;; (conta-cartas (make-mão (make-carta "verde" 4) (make-carta "verde" 4) (make-carta "verde" 4) (make-carta "verde" 15))) = 3
+;; (conta-cartas (make-mão (make-carta "preta" 15) (make-carta "preta" 15) (make-carta "preta" 15) (make-carta "preta" 4))) = 1
+
+;; Código
+(define 
+    (conta-cartas mão) 
+    (-
+        4
+        (carta-livre? (mão-carta1 mão))
+        (carta-livre? (mão-carta2 mão))
+        (carta-livre? (mão-carta3 mão))
+        (carta-livre? (mão-carta4 mão))
+    )
+)
+
+;; Testes
+(check-expect (conta-cartas MÃO4) 0)
+(check-expect (conta-cartas MÃO1) 4)
+(check-expect (conta-cartas MÃO3) 3)
+
+;; ========================================================================
+;; QUESTÃO 6
+;; ========================================================================
+
+;; -----------------
+;; TIPO RESULTADO:
+;; -----------------
+
+(define-struct resultado (carta mensagem))
+;; Um elemento do conjunto Resultado é uma estrutura
+;; (make-resultado uma-carta uma-mensagem), onde:
+;; uma-carta: Carta, é a a carta que deverá ser jogada em sequida
+;; uma-mensagem: String, é a mensagem a ser mostrada
+
+;; Exemplos de constantes do tipo Resultado:
+(define RESULTADO1 (make-resultado (make-carta "verde" 1) "Segue o jogo"))
+(define RESULTADO2 (make-resultado (make-carta "preto" 14) "UNO"))
+(define RESULTADO3 (make-resultado (make-carta "vermelho" 5) "Ganhei"))
+
+;; define-mensagem : Boleano Número -> String
+;; Dados um boleano e um número, representando respectivamente se alguma carta vai ser 
+;; jogada e o números de cartas na mão do jogador, retorna a mensagem a ser adicionada
+;; ao resultado, que pode ser "Segue o jogo", "UNO" ou "Ganhei"
+;; Exemplos: 
+;; (define-mensagem false 1) = "Segue o jogo"
+;; (define-mensagem true 1) = "Ganhei"
+;; (define-mensagem true 2) = "UNO"
+
+;; Código
+(define 
+    (define-mensagem carta_jogada qtd_cartas) 
+    (cond
+        ;; Caso nenhuma carta seja jogada, retorna "Segue o jogo"
+        [(not carta_jogada) "Segue o jogo"]
+        ;; Caso uma carta seja jogada e o jogador só tiver 1 carta em mãos
+        ;; retorna "Ganhei"
+        [(= qtd_cartas 1) "Ganhei"]
+        ;; Caso uma carta seja jogada e o jogador só tiver 2 cartas em mãos
+        ;; retorna "UNO"
+        [(= qtd_cartas 2) "UNO"]
+        ;; Caso uma carta seja jogada e o jogador tiver mais que 2 cartas em mãos
+        ;; retorna "Segue o jogo"
+        [else "Segue o jogo"]
+    )
+)
+
+;; Testes
+(check-expect (define-mensagem true 2) "UNO")
+(check-expect (define-mensagem true 3) "Segue o jogo")
+
+;; define-resultado : Carta Número -> Resultado
+;; Dada uma carta, representando a carta a ser jogada e um número representando
+;; o número de cartas na mão, retorna o resultado da jogada
+;; Exemplos: 
+;; (define-resultado (make-carta "vermelho" 12) 4) = (make-resultado (make-carta "vermelho" 12) "Segue o jogo")
+;; (define-resultado (make-carta "verde" 4) 1) = (make-resultado (make-carta "verde" 4) "Ganhei")
+
+;; Código
+(define 
+    (define-resultado carta qtd_cartas) 
+    (make-resultado carta (define-mensagem (<> (carta-livre? carta) 1) qtd_cartas))
+)
+
+;; Testes
+(check-expect (define-resultado (make-carta "preto" 15) 1) (make-resultado (make-carta "preto" 15) "Segue o jogo"))
+(check-expect (define-resultado (make-carta "azul" 4) 2) (make-resultado (make-carta "azul" 4) "UNO"))
+
+;; define-jogada : Mão Carta -> Resultado
+;; Dada uma mão e uma carta, representando respectivamente a mão de um jogador
+;; e a carta na mesa, retorna um resultado, contendo a próxima carta a ser jogada
+;; e uma mensagem, que pode ser "Segue o jogo", "UNO" ou "Ganhei"
+;; Exemplos: 
+;; (define-jogada MÃO4 (make-carta "vermelho" 10)) = (make-resultado (carta "preto" 15) "Segue o jogo")
+;; (define-jogada MÃO1 (make-carta "amarelo" 3)) = (make-resultado (carta "amarelo" 8) "Segue o jogo")
+
+;; Código
+(define 
+    (define-jogada mão carta) 
+    (cond
+        ;; Caso a primeira carta da mão se encaixe como uma jogada válida, retorna um resultado com
+        ;; essa carta e uma mensagem
+        [(jogada-válida? carta (mão-carta1 mão))(define-resultado (mão-carta1 mão) (conta-cartas mão))]
+        ;; Caso a segunda carta da mão se encaixe como uma jogada válida, retorna um resultado com
+        ;; essa carta e uma mensagem
+        [(jogada-válida? carta (mão-carta2 mão))(define-resultado (mão-carta2 mão) (conta-cartas mão))]
+        ;; Caso a terceira carta da mão se encaixe como uma jogada válida, retorna um resultado com
+        ;; essa carta e uma mensagem
+        [(jogada-válida? carta (mão-carta3 mão))(define-resultado (mão-carta3 mão) (conta-cartas mão))]
+        ;; Caso a quarta carta da mão se encaixe como uma jogada válida, retorna um resultado com
+        ;; essa carta e uma mensagem
+        [(jogada-válida? carta (mão-carta4 mão))(define-resultado (mão-carta4 mão) (conta-cartas mão))]
+        ;; Caso nenhuma carta da mão se encaixe como uma jogada válida, retorna uma carta livre ("preta"
+        ;; com valor 15) e a mensagem "Segue o jogo"
+        [else (define-resultado (make-carta "preto" 15) (conta-cartas mão))]
+    )
+)
+
+;; Testes
+(check-expect
+    (define-jogada 
+        (make-mão
+            (make-carta "verde" 15)
+            (make-carta "azul" 15)
+            (make-carta "vermelho" 3)
+            (make-carta "amarelo" 15)
+        ) 
+        (make-carta "amarelo" 3)
+    )
+    (make-resultado (make-carta "vermelho" 3) "Ganhei")
+)
+
+(check-expect
+    (define-jogada 
+        (make-mão
+            (make-carta "azul" 4)
+            (make-carta "azul" 15)
+            (make-carta "vermelho" 3)
+            (make-carta "amarelo" 15)
+        ) 
+        (make-carta "azul" 3)
+    )
+    (make-resultado (make-carta "azul" 4) "UNO")
+)
+
+;; ========================================================================
+;; QUESTÃO 7
+;; ========================================================================
+
+;; define-color : String -> String
+;; Dada uma string, representando o nome de uma cor em português, retorna essa
+;; cor em inglês
+;; Exemplos: 
+;; (define-color "verde") = "green"
+;; (define-color "azul") = "blue"
+;; (define-color "preto") = "black"
+
+;; Código
+(define 
+    (define-color cor) 
+    (cond
+        ;; Caso a cor seja "azul", retorna "blue"
+        [(string=? cor "azul") "blue"]
+        ;; Caso a cor seja "verde", retorna "green"
+        [(string=? cor "verde") "green"]
+        ;; Caso a cor seja "amarelo", retorna "yellow"
+        [(string=? cor "amarelo") "yellow"]
+        ;; Caso a cor seja "vermelho", retorna "red"
+        [(string=? cor "vermelho") "red"]
+        ;; Caso a cor seja "preto", retorna "black"
+        [(string=? cor "preto") "black"]
+    )
+)
+
+;; Testes
+(check-expect (define-color "verde") "green")
+(check-expect (define-color "preto") "black")
+
+;; define-simbolo : Número -> String
+;; Dada uma string, representando o valor da carta, devolve o símbolo a ser
+;; desenhado no meio da carta, que pode ser um número de 0 a 9, ">>" para pula vez,
+;; "<<" para inverte, "+2" para cartas +2, "JK" para curinga, "+4" para curinga +4 
+;; ou "LIVRE" para cartas livres.
+;; Exemplos: 
+;; (define-simbolo 8) = "8"
+;; (define-simbolo 13) = "CURINGA"
+;; (define-simbolo 15) = "LIVRE"
+
+;; Código
+(define 
+    (define-simbolo carta_valor) 
+    (cond
+        ;; Caso a carta possua valor 10, retorna a string ">>"
+        [(= carta_valor 10) ">>"]
+        ;; Caso a carta possua valor 11, retorna a string "+2"
+        [(= carta_valor 11) "+2"]
+        ;; Caso a carta possua valor 12, retorna a string "<<"
+        [(= carta_valor 12) "<<"]
+        ;; Caso a carta possua valor 13, retorna a string "JK"
+        [(= carta_valor 13) "JK"]
+        ;; Caso a carta possua valor 14, retorna a string "+4"
+        [(= carta_valor 14) "+4"]
+        ;; Caso a carta possua valor 15, retorna a string "LIVRE"
+        [(= carta_valor 15) "LIVRE"]
+        ;; Senão, retorna o valor da carta como string
+        [else (number->string carta_valor)]
+    )
+)
+
+;; Testes
+(check-expect (define-simbolo 9) "9")
+(check-expect (define-simbolo 11) "+2")
+(check-expect (define-simbolo 14) "+4")
+
+;; desenha-carta : Carta -> Imagem
+;; Dada uma carta, desenha essa carta, com sua calor e valor numérico
+;; Exemplos: 
+;; (desenha-carta (make-carta "preto" 14)) = desenhará uma carta com fundo preto
+;; com um círculo branco no meio e um "+4" escrito dentro deste círculo
+;; (desenha-carta (make-carta "azul" 9)) = desenhará uma carta com fundo azul
+;; com um círculo branco no meio e um "9" escrito dentro deste círculo
+;; (desenha-carta (make-carta "azul" 15)) = desenhará uma carta com fundo branco
+;; e bordas pretas, com "LIVRE" escrito no meio
+
+;; Código
+(define 
+    (desenha-carta carta)
+    (cond
+        ;; Caso a carta seja livre, desenha um retangulo branco com "LIVRE" escrito
+        [(= (carta-livre? carta) 1)
+            (overlay 
+                (text (define-simbolo (carta-valor carta)) 25 "black")
+                (rectangle 90 120 "outline" "black")
+            )
+        ]
+        ;; Caso a carta não seja livre, desenha um retangulo da cor da carta, com um
+        ;; circulo branco no meio e uma string representando o valor da carta no meio dela
+        [else
+            (overlay 
+                (text (define-simbolo (carta-valor carta)) 30 "black")
+                (circle 35 "solid" "white")
+                (rectangle 90 120 "solid" (define-color (carta-cor carta)))
+            )
+        ]
+    )
+)
+
+;; Testes
+(check-expect 
+    (desenha-carta (make-carta "azul" 15)) 
+    (overlay 
+        (text "LIVRE" 25 "black")
+        (rectangle 90 120 "outline" "black")
+    )
+)
+(check-expect 
+    (desenha-carta (make-carta "azul" 10)) 
+    (overlay 
+        (text ">>" 30 "black")
+        (circle 35 "solid" "white")
+        (rectangle 90 120 "solid" "blue")
+    )
+)
+(check-expect 
+    (desenha-carta (make-carta "vermelho" 4)) 
+    (overlay 
+        (text "4" 30 "black")
+        (circle 35 "solid" "white")
+        (rectangle 90 120 "solid" "red")
+    )
+)
+
+;; ========================================================================
+;; QUESTÃO 8
+;; ========================================================================
+
+;; desenha-mão : Mão -> Imagem
+;; Dada uma mão, desenha todas as carta dessa mão uma ao lado da outra, com uma 
+;; String "Mão:" indicando.
+;; Exemplos: 
+;; (desenha-mão MÃO1) desenhará uma string "Mão:" com 4 cartas uma do lado da outra
+;; ao seu lado, a primeira verde com valor 1, a segunda azul com valor 2, a terceira
+;; vermelha com valor 1 e a quarta amarela com valor 8
+;; (desenha-mão MÃO2) desenhará uma string "Mão:" com 4 cartas uma do lado da outra
+;; ao seu lado, a primeira vermelha com valor 1, a segunda vermelha com valor 2, a terceira
+;; vermelha com valor 3 e a quarta vermelha com valor 4
+
+;; Código
+(define 
+    (desenha-mão mão)
+    (beside 
+        (text "Mão:" 18 "black")
+        (desenha-carta (mão-carta1 mão))
+        (desenha-carta (mão-carta2 mão))
+        (desenha-carta (mão-carta3 mão))
+        (desenha-carta (mão-carta4 mão))
+    )
+)
+
+;; Testes
+(check-expect 
+    (desenha-mão MÃO3)
+    (beside 
+        (text "Mão:" 18 "black")
+        (desenha-carta (make-carta "preto" 14))
+        (desenha-carta (make-carta "preto" 13))
+        (desenha-carta (make-carta "vermelho" 15))
+        (desenha-carta (make-carta "vermelho" 8))
+    )
+)
+(check-expect 
+    (desenha-mão MÃO4)
+    (beside 
+        (text "Mão:" 18 "black")
+        (desenha-carta (make-carta "preto" 15))
+        (desenha-carta (make-carta "preto" 15))
+        (desenha-carta (make-carta "preto" 15))
+        (desenha-carta (make-carta "preto" 15))
+    )
+)
+
+;; desenha-mesa : Carta -> Imagem
+;; Dada uma carta, desenha a mesa de jogo (um círculo marrom), com a carta
+;; escolhida em cima dela e uma String "Mesa:" indicando.
+;; Exemplos: 
+;; (desenha-mesa CARTA1) desenhará uma string "Mesa:" com uma imagem da mesa ao seu lado
+;; que contera um circulo marrom e uma carta verde com valor 0 pro cima
+;; (desenha-mesa CARTA1) desenhará uma string "Mesa:" com uma imagem da mesa ao seu lado
+;; que contera um circulo marrom e uma carta azul com valor 8 pro cima
+
+;; Código
+(define 
+    (desenha-mesa carta)
+    (beside 
+        (text "Mesa:" 18 "black")
+        (overlay
+            (desenha-carta carta)
+            (circle 100 "solid" "brown")
+        )
+    )
+)
+
+;; Testes
+(check-expect 
+    (desenha-mesa CARTA3)
+    (beside 
+        (text "Mesa:" 18 "black")
+        (overlay
+            (desenha-carta (make-carta "preto" 14))
+            (circle 100 "solid" "brown")
+        )
+    )
+)
+(check-expect 
+    (desenha-mesa CARTA4)
+    (beside 
+        (text "Mesa:" 18 "black")
+        (overlay
+            (desenha-carta (make-carta "vermelho" 10))
+            (circle 100 "solid" "brown")
+        )
+    )
+)
+
+;; desenha-carta-selecionada : Carta Número -> Imagem
+;; Dada uma carta, desenha uma frase indicando qual a carta selecionada, desenha a 
+;; carta, e mostra a mensagem dependendo da quantidade de cartas restante na mão do
+;; jogador
+;; Exemplos:
+;; (desenha-carta-selecionada CARTA4 4) desenhará uma string "Carta selecionada:", com 
+;; a carta selecionada ao seu lado (cor vermelha e símbolo ">>"), com a mensagem "Segue o jogo"
+;; ao seu lado
+;; (desenha-carta-selecionada CARTA4 1) desenhará uma string "Carta selecionada:", com 
+;; a carta selecionada ao seu lado (cor preto e símbolo "+4"), com a mensagem "Ganhei"
+;; ao seu lado
+
+;; Código
+(define 
+    (desenha-carta-selecionada carta qtd_cartas)
+    (beside 
+        (text "Carta selecionada:" 18 "black")
+        (desenha-carta carta)
+        (text (define-mensagem (<> (carta-livre? carta) 1) qtd_cartas) 18 "red")
+    )
+)
+
+;; Testes
+(check-expect 
+    (desenha-carta-selecionada CARTA1 2)
+    (beside 
+        (text "Carta selecionada:" 18 "black")
+        (desenha-carta CARTA1)
+        (text (define-mensagem (<> (carta-livre? CARTA1) 1) 2) 18 "red")
+    )
+)
+(check-expect 
+    (desenha-carta-selecionada CARTA2 3)
+    (beside 
+        (text "Carta selecionada:" 18 "black")
+        (desenha-carta CARTA2)
+        (text (define-mensagem (<> (carta-livre? CARTA2) 1) 3) 18 "red")
+    )
+)
+
+;; mostra-jogada : Mão Carta -> Imagem
+;; Dada uma Mão e uma Carta, representando respectivamente a mão do jogador e a 
+;; última carta na mesa, desenha a mão do jogador, a próxima carta jogada e o resultado
+;; da jogada
+;; Exemplos: 
+;; (mostra-jogada MÃO1 CARTA1) desenhará a mão dos jogador com uma carta verde de valor 1, uma
+;; carta azul de valor 2, uma carta vermelha de valor 1 e uma carta amarela de valor 8, abaixo
+;; desenhará uma mesa contendo a última carta jogada (verde de valor 0), e por último, desenhará
+;; a carta selecionada (verde de valor 1), com a mensagem "Segue o jogo" ao seu lado
+;; (mostra-jogada MÃO1 CARTA2) desenhará a mão dos jogador com uma carta verde de valor 1, uma
+;; carta azul de valor 2, uma carta vermelha de valor 1 e uma carta amarela de valor 8, abaixo
+;; desenhará uma mesa contendo a última carta jogada (azul de valor 8), e por último, desenhará
+;; a carta selecionada (azul de valor 2), com a mensagem "Segue o jogo" ao seu lado
+
+;; Código
+(define 
+    (mostra-jogada mão carta)
+    (above 
+        (desenha-mão mão)
+        (desenha-mesa carta)
+        (desenha-carta-selecionada (resultado-carta (define-jogada mão carta)) (conta-cartas mão))
+    )
+)
+
+;; Testes
+(check-expect 
+    (mostra-jogada MÃO1 CARTA3)
+    (above 
+        (beside 
+            (text "Mão:" 18 "black")
+            (desenha-carta (make-carta "verde" 1))
+            (desenha-carta (make-carta "azul" 2))
+            (desenha-carta (make-carta "vermelho" 1))
+            (desenha-carta (make-carta "amarelo" 8))
+        )
+        (beside 
+            (text "Mesa:" 18 "black")
+            (overlay
+                (desenha-carta (make-carta "preto" 14))
+                (circle 100 "solid" "brown")
+            )
+        )
+        (beside 
+            (text "Carta selecionada:" 18 "black")
+            (desenha-carta (resultado-carta (define-jogada MÃO1 CARTA3)))
+            (text (define-mensagem (resultado-carta (define-jogada MÃO1 CARTA3)) 4) 18 "red")
+        )
+    )
+)
+(check-expect 
+    (mostra-jogada MÃO2 CARTA2)
+    (above 
+        (beside 
+            (text "Mão:" 18 "black")
+            (desenha-carta (make-carta "vermelho" 1))
+            (desenha-carta (make-carta "vermelho" 2))
+            (desenha-carta (make-carta "vermelho" 3))
+            (desenha-carta (make-carta "vermelho" 4))
+        )
+        (beside 
+            (text "Mesa:" 18 "black")
+            (overlay
+                (desenha-carta (make-carta "azul" 8))
+                (circle 100 "solid" "brown")
+            )
+        )
+        (beside 
+            (text "Carta selecionada:" 18 "black")
+            (desenha-carta (resultado-carta (define-jogada MÃO2 CARTA2)))
+            (text (define-mensagem (resultado-carta (define-jogada MÃO2 CARTA2)) 4) 18 "red")
+        )
+    )
+)

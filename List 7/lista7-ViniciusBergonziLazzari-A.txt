@@ -1,0 +1,270 @@
+;; ========================================================================
+;;                        DEFINIÇÕES DE DADOS
+;; ========================================================================  
+
+;; CONSTANTES:
+(define PULA_VEZ -1)
+(define COMPRA2 -2)
+(define INVERTE -3)
+(define CURINGA -5)
+(define CURINGA_COMPRA4 -4)
+
+(define LISTA_DE_NUMEROS1 (cons 1 (cons 2 (cons 3 (cons 4 empty)))))
+(define LISTA_DE_NUMEROS2 (cons PULA_VEZ (cons 8 (cons INVERTE (cons 9 (cons 5 empty))))))
+(define LISTA_DE_NUMEROS3 empty)
+
+;; -----------------
+;; TIPO CARTA:
+;; -----------------
+(define-struct carta (cor valor))
+;; Um elemento do conjunto Carta é
+;;   (make-carta c v)     onde
+;;   c : String, é a cor da carta, que pode ser "azul", "verde", "amarelo", "vermelho" ou "preto" ou "livre"
+;;   v : Número, é o valor da carta, que pode ser qualquer inteiro entre 0 e 9,
+;;               ou um número negativo -1 (PulaVez), -2 (Compra2), -3 (Inverte),-4 (Compra4) ou -5 (Curinga)
+
+;; --------------------
+;; TIPO LISTA DE CARTAS:
+;; --------------------
+;; Uma ListaDeCartas é
+;; 1. vazia (empty), ou
+;; 2. (cons c lc), onde 
+;;        c: Carta;
+;;       lc: ListaDeCartas
+
+;; --------------------
+;; TIPO LISTA DE NÚMEROS:
+;; --------------------
+;; Uma ListaDeNúmeros é
+;; 1. vazia (empty), ou
+;; 2. (cons n ln), onde 
+;;        n: Número;
+;;       ln: ListaDeNúmeros
+
+(define CARTA1 (make-carta "azul" INVERTE))
+(define CARTA2 (make-carta "verde" COMPRA2))
+(define CARTA3 (make-carta "vermelho" COMPRA2))
+(define CARTA4 (make-carta "amarelo" PULA_VEZ))
+(define CARTA5 (make-carta "preto" CURINGA))
+(define CARTA6 (make-carta "azul" 1))
+(define CARTA7 (make-carta "verde" 2))
+(define CARTA8 (make-carta "vermelho" 8))
+(define CARTA9 (make-carta "amarelo" 2))
+(define CARTA10 (make-carta "preto" CURINGA_COMPRA4))
+
+(define LISTA_DE_CARTAS1 (cons CARTA1 (cons CARTA2 (cons CARTA3 (cons CARTA4 empty)))))
+(define LISTA_DE_CARTAS2 (cons CARTA10 (cons CARTA5 (cons CARTA1 empty))))
+(define LISTA_DE_CARTAS3 (cons CARTA6 (cons CARTA7 (cons CARTA8 (cons CARTA9 (cons CARTA1 empty))))))
+(define LISTA_DE_CARTAS4 (cons CARTA1 empty))
+(define LISTA_DE_CARTAS5 empty)
+(define LISTA_DE_CARTAS6 (cons CARTA6 (cons CARTA6 (cons CARTA6 (cons CARTA6 (cons CARTA6 empty))))))
+(define LISTA_DE_CARTAS7 (cons CARTA10 (cons CARTA2 (cons CARTA10 (cons CARTA3 (cons CARTA3 empty))))))
+
+
+;; =========================================================================
+;;                                 QUESTÃO 1
+;; =========================================================================
+
+;; cria-cartas : String ListaDeNúmeros -> ListaDeCartas
+;; Objetivo: Dada uma cor e uma lista de valor para as cartas, retorna uma lista
+;; de cartas com a cor e números especificados.
+;; Exemplos:
+;; (cria-cartas "verde" LISTA_DE_NUMEROS3) = empty
+;; (cria-cartas "azul" LISTA_DE_NUMEROS1) = (cons (make-carta "azul" 1) (cons (make-carta "azul" 2) (cons (make-carta "azul" 3) (cons (make-carta "azul" 4) empty))))
+
+;; Corpo da função
+(define (cria-cartas cor ln)
+  (cond
+    ;; Se a lista de número for vazia, retorna uma lista vazia
+    [(empty? ln) empty]
+    ;; Senão, monta uma lista com o elemento Carta contendo a cor e número do primero elemento da lista ln
+    ;; e a lista de Cartas resultante do resto da lista ln
+    [else (cons (make-carta cor (first ln)) (cria-cartas cor (rest ln)))]
+  )
+)
+
+;; Testes
+(check-expect (cria-cartas "amarelo" LISTA_DE_NUMEROS2) (cons (make-carta "amarelo" -1) (cons (make-carta "amarelo" 8) (cons (make-carta "amarelo" -3) (cons (make-carta "amarelo" 9) (cons (make-carta "amarelo" 5) empty))))))
+(check-expect (cria-cartas "vermelho" LISTA_DE_NUMEROS3) empty)
+
+
+;; =========================================================================
+;;                                 QUESTÃO 2
+;; =========================================================================
+
+;; seleciona-cartas : ListaDeCartas String -> ListaDeCartas
+;; Objetivo: Dada uma lista de cartas e uma cor, retorna as cartas da lista que
+;; possuem a cor especificada.
+;; Exemplos:
+;; (seleciona-cartas LISTA_DE_CARTAS5 "amarelo") = empty
+;; (seleciona-cartas LISTA_DE_CARTAS3 "amarelo") = (cons (make-carta "amarelo" 2) empty)
+
+;; Corpo da função
+(define (seleciona-cartas lc cor)
+  (cond
+    ;; Se a lista de cartas for vazia, retorna uma lista vazia
+    [(empty? lc) empty]
+    ;; Se a primeira carta da lista for da cor especificada, construir uma pilha com a primeira
+    ;; carta da lista lc e o resto das cartas da cor especificada da lista lc
+    [(string=? cor (carta-cor (first lc))) (cons (first lc) (seleciona-cartas (rest lc) cor))]
+    ;; Senão, devolver o resto das cartas da cor especificada da lista lc
+    [else (seleciona-cartas (rest lc) cor)]
+  )
+)
+
+;; Testes
+(check-expect (seleciona-cartas LISTA_DE_CARTAS2 "preto") (cons (make-carta "preto" -4) (cons (make-carta "preto" -5) empty)))
+(check-expect (seleciona-cartas LISTA_DE_CARTAS3 "preto") empty)
+
+;; =========================================================================
+;;                                 QUESTÃO 3
+;; =========================================================================
+
+;; carta=? : Carta Carta -> Boolean
+;; Objetivo: Dadas duas cartas, retorna se elas são iguais.
+;; Exemplos:
+;; (carta=? CARTA1 (make-carta "verde" 2)) = false
+;; (carta=? CARTA1 (make-carta "azul" INVERTE)) = true
+
+;; Corpo da função
+(define (carta=? carta1 carta2)
+  ;; Se a cor da carta1 for igual a cor da carta2 e o valor da carta1 for igual ao valor da carta2
+  ;; retorna true, senão, retorna false
+  (and (string=? (carta-cor carta1) (carta-cor carta2)) (= (carta-valor carta1) (carta-valor carta2)))
+)
+
+;; Testes
+(check-expect (carta=? CARTA5 (make-carta "preto" CURINGA)) true)
+(check-expect (carta=? CARTA5 (make-carta "vermelho" CURINGA)) false)
+(check-expect (carta=? CARTA5 (make-carta "vermelho" 2)) false)
+
+;; possui-carta : Carta ListaDeCartas -> Boolean
+;; Objetivo: Dada uma carta e uma lista de cartas, retorna true se a lista de cartas contem a carta.
+;; Exemplos:
+;; (possui-carta CARTA4 LISTA_DE_CARTAS2) = false
+;; (possui-carta CARTA4 LISTA_DE_CARTAS1) = true
+;; (possui-carta CARTA5 LISTA_DE_CARTAS1) = false
+
+;; Corpo da função
+(define (possui-carta carta lc)
+  (cond
+    ;; Se a lista estiver vazia, retorna false
+    [(empty? lc) false]
+    ;; Se o primeiro elemento da lista for igual a carta de entrada, retorna true
+    [(carta=? carta (first lc)) true]
+    ;; Senão, retorna se o resto da lista de cartas possui a carta de entrada
+    [else (possui-carta carta (rest lc))]
+  )
+)
+
+;; Testes
+(check-expect (possui-carta CARTA5 LISTA_DE_CARTAS2) true)
+(check-expect (possui-carta CARTA1 LISTA_DE_CARTAS5) false)
+(check-expect (possui-carta CARTA7 LISTA_DE_CARTAS3) true)
+
+;; remove-repetidas : ListaDeCartas -> ListaDeCartas
+;; Objetivo: Dada uma lista de cartas, retorna uma lista de cartas com as cartas da lista de entrada
+;; que não se repetem
+;; Exemplos:
+;; (remove-repetidas LISTA_DE_CARTAS5) = empty
+;; (remove-repetidas LISTA_DE_CARTAS3) = (cons CARTA6 (cons CARTA7 (cons CARTA8 (cons CARTA9 (cons CARTA1 empty)))))
+;; (remove-repetidas LISTA_DE_CARTAS6) = (cons (make-carta "azul" 1) empty)
+
+;; Corpo da função
+(define (remove-repetidas lc)
+  (cond
+    ;; Se a lista estiver vazia, retorna uma lista vazia
+    [(empty? lc) empty]
+    ;; Se o resto da lista não possuir a primeira carta da lista, monta uma lista com a primeira carta e
+    ;; o resto das cartas não repetidas da lista
+    [(not (possui-carta (first lc) (rest lc))) (cons (first lc) (remove-repetidas (rest lc)))]
+    ;; Senão, retorna o resto das cartas não repetidas da lista
+    [else (remove-repetidas (rest lc))]
+  )
+)
+
+;; Testes
+(check-expect (remove-repetidas LISTA_DE_CARTAS7) (cons (make-carta "verde" -2) (cons (make-carta "preto" -4) (cons (make-carta "vermelho" -2) empty))))
+(check-expect (remove-repetidas LISTA_DE_CARTAS4) (cons (make-carta "azul" -3) empty))
+(check-expect (remove-repetidas LISTA_DE_CARTAS1) (cons (make-carta "azul" -3) (cons (make-carta "verde" -2) (cons (make-carta "vermelho" -2) (cons (make-carta "amarelo" -1) empty)))))
+
+;; =========================================================================
+;;                                 QUESTÃO 4
+;; =========================================================================
+
+;; Documentação da função random, que já existe no Racket, que deve ser usada
+;; na resolução do exercício:
+
+;; random: Número -> Número
+;; obj: Dado um número inteiro k, retorna um número inteiro aleatório, 
+;; no intervalo [0, k-1]
+;; ex:
+;;   (random 1) -> 0
+;;   (random 2) -> 0
+;;   (random 2) -> 1
+;;   (random 3) -> 2
+;;   (random 1000) -> 42
+
+;; quantas-cartas : ListaDeCartas -> Número
+;; Objetivo: Dada uma lista de cartas, retorna o número de Cartas dessa lista.
+;; Exemplos:
+;; (quantas-cartas LISTA_DE_CARTAS7) = 5
+;; (quantas-cartas LISTA_DE_CARTAS1) = 4
+
+;; Corpo da função
+(define (quantas-cartas lc)
+  (cond
+    ;; Se a lista estiver vazia, soma 0
+    [(empty? lc) 0]
+    ;; Senão, soma 1 com a quantidade do resto da lista de cartas
+    [else (+ 1 (quantas-cartas (rest lc)))]
+  )
+)
+
+;; Testes
+(check-expect (quantas-cartas LISTA_DE_CARTAS5) 0)
+(check-expect (quantas-cartas LISTA_DE_CARTAS2) 3)
+
+;; insere-carta : ListaDeCartas Carta Número -> Número
+;; Objetivo: Dada uma lista de cartas, uma carta e uma posição da lista, insere
+;; a carta de entrada na posição de entrada da lista.
+;; Exemplos:
+;; (insere-carta LISTA_DE_CARTAS6 CARTA1 0) = (cons CARTA1 (cons CARTA6 (cons CARTA6 (cons CARTA6 (cons CARTA6 (cons CARTA6 empty))))))
+;; (insere-carta LISTA_DE_CARTAS4 CARTA4 0) = (cons CARTA4 (cons CARTA1 empty))
+;; (insere-carta LISTA_DE_CARTAS5 CARTA3 0) = empty
+
+;; Corpo da função
+(define (insere-carta lc c p)
+  (cond
+    [(= p 0) (cons c lc)]
+    ;; Senão, monta uma lista com a primeira carta da lista e o resto das cartas que foram
+    ;; inseridas na posição relativa p - 1 da lista
+    [else (cons (first lc) (insere-carta (rest lc) c (- p 1)))]
+  )
+)
+
+;; Testes
+(check-expect (insere-carta LISTA_DE_CARTAS5 CARTA5 0) (cons CARTA5 empty))
+(check-expect (insere-carta LISTA_DE_CARTAS2 CARTA1 2) (cons CARTA10 (cons CARTA5 (cons CARTA1 (cons CARTA1 empty)))))
+(check-expect (insere-carta LISTA_DE_CARTAS4 CARTA7 1) (cons CARTA1 (cons CARTA7 empty)))
+
+;; embaralha : ListaDeCartas -> ListaDeCartas
+;; Objetivo: Dada uma lista de carta, retorna a lista de entrada embaralhada
+;; Exemplos:
+;; (embaralha LISTA_DE_CARTAS1) = (cons CARTA2 (cons CARTA4 (cons CARTA1 (cons CARTA3 empty))))
+;; (embaralha LISTA_DE_CARTAS2) = (cons CARTA5 (cons CARTA10 (cons CARTA1 empty))))
+;; (embaralha LISTA_DE_CARTAS5) = empty
+
+
+;; Corpo da função
+(define (embaralha lc)
+  (cond
+    ;; Se a lista estiver vazia, retorna uma lista vazia
+    [(empty? lc) empty]
+    ;; Se a lista só tiver uma carta, retorna uma lista com a carta atual
+    [(= (quantas-cartas lc) 1) (cons (first lc) empty)]
+    ;; Senão, insere a primeira carta da lista em uma posição aleatória do resto da lista de cartas
+    ;; embaralhada
+    [else (insere-carta (embaralha (rest lc)) (first lc) (random (quantas-cartas lc)))]
+  )
+)

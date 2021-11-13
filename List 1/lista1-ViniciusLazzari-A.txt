@@ -1,0 +1,57 @@
+;;;;;;;;;;;; Vinícius Bergonzi Lazzari
+;;;;;;;;;;;; Lista 1
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 1 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Item a
+(/ (+ 5 3) 4)
+
+;; Item b
+(- (sqrt 9) 1)
+
+;; Item c
+(+ (sin (/ pi 2)) 1)
+
+;; Item d
+(* (- (sqrt(expt 5 4)) (log e)) (/ 1 12))
+
+;; Item e
+(/ (- (sqrt (- (expt 4 2)(* 4 -16 2))) 4) (* 2 2))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 2 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;(define (area-circulo raio)
+;;  (* pi (raio * raio)))
+
+;;(define (volume-cilindro r a)
+;;  (* (area-Circulo raio) a))
+
+;; O operador "*" no define da função area-circulo está incorreto
+;; e deveria ser posto antes do primeiro parâmetro. O parametro raio
+;; no define da segunda função não existe (está com o nome "r"). Por
+;; fim, o segundo define chama a função "area-circulo" com o nome incorreto.
+
+(define (area-circulo raio)
+  (* pi (* raio raio))
+)
+
+(define (volume-cilindro raio a)
+  (* (area-circulo raio) a)
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 3 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (bhaskara a b c)
+  (/ (- (sqrt (- (expt b 2)(* 4 a c))) b) (* 2 a))
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 4 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (calcula-TMB p a i f)
+  (* (- (+ 66.5 (* 13.75 p) (* 5 a)) (* 6.8 i)) f)
+)

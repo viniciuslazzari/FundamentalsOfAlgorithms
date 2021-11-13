@@ -1,0 +1,446 @@
+;; Nome: Vinícius Bergonzi Lazzari
+;; Lista 10
+
+;; ============================================
+;; DEFINIÇÕES DE TIPOS DE DADOS
+;; ============================================
+
+;; ------------------
+;; TIPO ARQUIVO:
+;; ------------------
+(define-struct arquivo (nome tamanho)) 
+;; Um elemento do conjunto Arquivo tem o formato
+;;  (make-arquivo n t), onde
+;;    n: String, é o nome do arquivo
+;;    t: Número, é o tamanho do arquivo, em Kb.
+
+;; ------------------
+;; TIPO CONTEUDO:
+;; ------------------
+;; Um Conteudo é
+;; 1. empty,
+;; 2. (cons a lc), onde a: Arquivo e lc: Conteudo
+;; 3. (cons d lc), onde d: Diretorio e lc: Conteudo
+
+;; ------------------
+;; TIPO DIRETORIO:
+;; ------------------
+(define-struct diretorio (nome conteudo))
+;; Um elemento do conjunto Diretorio tem o formato
+;;  (make-diretorio n c), onde
+;;    n: String, é o nome do diretório
+;;    c: Conteudo, é o conteúdo do diretório
+
+
+;; =========================================================================
+;;                                 QUESTÃO 1
+;; =========================================================================
+
+;; DEFINIÇÃO DE CONSTANTES
+(define PASTA-JOÃO
+  (make-diretorio "João"
+    (list
+      (make-diretorio "Documentos" 
+        (list
+          (make-arquivo "CPF.png" 100)
+          (make-arquivo "RG.png" 100)
+        )
+      )
+      (make-diretorio "Faculdade" 
+        (list
+          (make-diretorio "Fundamentos" 
+            (list
+              (make-arquivo "lista1-JoãoMarcosFlach-X.rkt" 50)
+              (make-arquivo "lista2-JoãoMarcosFlach-X.rkt" 50)
+              (make-arquivo "lista3-JoãoMarcosFlach-X.rkt" 50)
+            )  
+          )
+          (make-diretorio "Programação" empty)
+          (make-diretorio "TCC" 
+            (list
+              (make-diretorio "Imagens"
+                (list
+                  (make-arquivo "algoritmo.png" 100)
+                  (make-arquivo "resultados.png" 100)
+                  (make-arquivo "testes.png" 100)
+                )
+              )
+              (make-arquivo "tcc.txt" 50)
+            )                
+          )
+        )
+      )
+      (make-diretorio "Imagens" 
+        (list
+          (make-arquivo "profile.png" 100)
+        )
+      )
+      (make-diretorio "Música"        
+        (list
+          (make-arquivo "unknown-artist-1.mp3" 2000)
+          (make-arquivo "unknown-artist-2.mp3" 2000)
+          (make-arquivo "unknown-artist-3.mp3" 2000)
+          (make-arquivo "unknown-artist-4.mp3" 2000)
+          (make-arquivo "unknown-artist-5.mp3" 2000)
+        )
+      ) 
+    )
+  )
+)
+
+;; =========================================================================
+;;                                 QUESTÃO 2
+;; =========================================================================
+
+;; arquivo-no-dir?: Conteudo String -> Booleano
+;; Dado o conteudo de um diretório e o nome de um arquivo, verifica se o arquivo está no diretório.
+;; Exemplos:
+;; (arquivo-no-dir? empty "foto.png") = false
+;; (arquivo-no-dir? (list (make-arquivo "teste.mp3" 2000) (make-arquivo "profile.png" 100)) "foto.png") = false
+;; (arquivo-no-dir? (list (make-arquivo "teste.mp3" 2000) (make-arquivo "profile.png" 100)) "profile.png") = true
+
+;; Definição da função
+(define (arquivo-no-dir? conteudo arquivo)
+  (cond
+    ;; Se o conteudo estiver vazio, retorna false
+    [(empty? conteudo) false]
+    ;; Se o primeiro elemento do conteudo for um arquivo e tiver o mesmo nome do arquivo buscado, retorna true
+    [(and (arquivo? (first conteudo)) (string=? (arquivo-nome (first conteudo)) arquivo)) true]
+    ;; Senão, verifica se o arquivo está no resto do conteudo
+    [else (arquivo-no-dir? (rest conteudo) arquivo)]
+  )
+)
+
+;; Testes
+(check-expect (arquivo-no-dir? (list (make-arquivo "musica.mp3" 2000)) "musica.mp3") true)
+(check-expect (arquivo-no-dir? (list (make-arquivo "musica.mp3" 2000) (make-arquivo "entrada.mp3" 2000)) "viniciustcc.doc") false)
+(check-expect (arquivo-no-dir? empty "inf-ufrgs.txt") false)
+
+;; =========================================================================
+;;                                 QUESTÃO 3
+;; =========================================================================
+
+;; arquivo-encontrado?: Conteudo String -> Booleano
+;; Dado o conteudo de um diretório e o nome de um arquivo, verifica se o arquivo está no diretório ou em algum dos seus sub-diretórios.
+;; Exemplos:
+;; (arquivo-encontrado? (list (make-arquivo "musica.mp3" 200)) "musica.mp3") = true
+;; (arquivo-encontrado? (diretorio-conteudo PASTA-JOÃO) "musica.mp3") = false
+;; (arquivo-encontrado? empty "musica.mp3") = false
+
+;; Definição da função
+(define (arquivo-encontrado? conteudo arquivo)
+  (cond
+    ;; Se o arquivo estiver no conteudo, retorna true
+    [(arquivo-no-dir? conteudo arquivo) true]
+    ;; Senão, verifica se o arquivo está nos outros diretórios do conteúdo
+    [else (arquivo-encontrado-lista? (filter diretorio? conteudo) arquivo)]
+  )
+)
+
+;; Testes
+(check-expect (arquivo-encontrado? (diretorio-conteudo PASTA-JOÃO) "arquivo.txt") false)
+(check-expect (arquivo-encontrado? (diretorio-conteudo PASTA-JOÃO) "unknown-artist-5.mp3") true)
+(check-expect (arquivo-encontrado? empty "unknown-artist-5.mp3") false)
+
+;; arquivo-encontrado-lista?: Conteudo String -> Booleano
+;; Dado o conteudo de um diretório e o nome de um arquivo, verifica se o arquivo está no diretório ou em algum dos seus sub-diretórios.
+;; Exemplos:
+;; (arquivo-encontrado-lista? empty "jogo.exe") = false
+;; (arquivo-encontrado-lista? (diretorio-conteudo PASTA-JOÃO) "Fundamentos") = false
+;; (arquivo-encontrado-lista? (diretorio-conteudo PASTA-JOÃO) "lista1-JoãoMarcosFlach-X.rkt") = true
+
+;; Definição da função
+(define (arquivo-encontrado-lista? conteudo arquivo)
+  (cond
+    ;; Se a lista estiver vazia, retorna false
+    [(empty? conteudo) false]
+    ;; Senão
+    [else 
+      ;; ou
+      (or
+        ;; Existe o arquivo no conteudo do primeiro diretório da lista
+        (arquivo-encontrado? (diretorio-conteudo (first (filter diretorio? conteudo))) arquivo)
+        ;; O arquivo existe entre o resto do conteudo
+        (arquivo-encontrado-lista? (rest conteudo) arquivo)
+      )
+    ]
+  )
+)
+
+;; Testes
+(check-expect (arquivo-encontrado-lista? (diretorio-conteudo PASTA-JOÃO) "unknown-artist-5.mp4") false)
+(check-expect (arquivo-encontrado-lista? (diretorio-conteudo PASTA-JOÃO) "tcc.txt") true)
+(check-expect (arquivo-encontrado-lista? empty "profile.png") false)
+
+;; =========================================================================
+;;                                 QUESTÃO 4
+;; =========================================================================
+
+;; ------------------
+;; TIPO LISTA DE ARQUIVOS:
+;; ------------------
+
+;; Uma ListaDeArquivos é ou
+;; 1. A lista vazia empty, ou
+;; 2. (cons a (lda)), onde
+;;    a: Arquivo,
+;;    lda: ListaDeArquivos
+
+;; calcula-tamanho-arquivos: ListaDeArquivos -> Número
+;; Dada uma lista de arquivos, devolve a soma do tamanho de todos os arquivos da lista.
+;; Exemplos:
+;; (calcula-tamanho-arquivos empty) = 0
+;; (calcula-tamanho-arquivos (list (make-arquivo "CPF.png" 100) (make-arquivo "RG.png" 100))) = 200
+
+;; Definição da função
+(define (calcula-tamanho-arquivos arquivos)
+  (cond
+    ;; Se a lista estiver vazia, retorna 0
+    [(empty? arquivos) 0]
+    ;; Senão
+    [else
+      ;; Soma
+      (+ 
+        ;; O tamanho do primeiro arquivo
+        (arquivo-tamanho (first arquivos))
+        ;; Com a soma do resto dos arquivos
+        (calcula-tamanho-arquivos (rest arquivos)
+      )
+    )]
+  )
+)
+
+;; Testes
+(check-expect (calcula-tamanho-arquivos empty) 0)
+(check-expect (calcula-tamanho-arquivos (list (make-arquivo "1.txt" 50) (make-arquivo "2.txt" 50) (make-arquivo "3.txt" 50))) 150)
+(check-expect (calcula-tamanho-arquivos (list (make-arquivo "1.png" 100) (make-arquivo "musica2.txt" 2000) (make-arquivo "3.rkt" 50))) 2150)
+
+;; ------------------
+;; TIPO LISTA DE DIRETÓRIOS:
+;; ------------------
+
+;; Uma ListaDeDiretorios é ou
+;; 1. A lista vazia empty, ou
+;; 2. (cons d (ldd)), onde
+;;    d: Diretório,
+;;    lda: Lista de Diretórios
+
+;; calcula-tamanho-lista: ListaDeDiretorios -> Número
+;; Dada uma lista de diretorios, retorna a soma do tamanho dos arquivos e diretórios contidos na lista.
+;; Exemplos:
+;; (calcula-tamanho-lista empty) = 0
+;; (calcula-tamanho-lista (diretorio-conteudo PASTA-JOÃO)) = 10880
+
+;; Definição da função
+(define (calcula-tamanho-lista conteudo)
+  (cond
+    ;; Se o conteudo estiver vazio, retorna 0
+    [(empty? conteudo) 0]
+    ;; Senão
+    [else
+      ;; Soma
+      (+
+        ;; O tamanho dos arquivos e diretórios do primeiro diretórios
+        (calcula-tamanho (first conteudo))
+        ;; O tamanho dos arquivos e diretórios do resto dos diretórios
+        (calcula-tamanho-lista (rest conteudo))
+      )
+    ]
+  )
+)
+
+;; Testes
+(check-expect (calcula-tamanho-lista empty) 0)
+
+(check-expect 
+  (calcula-tamanho-lista 
+    (list
+       (make-diretorio "Fundamentos" 
+         (list
+           (make-arquivo "lista1-JoãoMarcosFlach-X.rkt" 50)
+           (make-arquivo "lista2-JoãoMarcosFlach-X.rkt" 50)
+           (make-arquivo "lista3-JoãoMarcosFlach-X.rkt" 50)
+         )  
+       )
+       (make-diretorio "Programação" empty)
+       (make-diretorio "TCC" 
+         (list
+           (make-diretorio "Imagens"
+             (list
+               (make-arquivo "algoritmo.png" 100)
+               (make-arquivo "resultados.png" 100)
+               (make-arquivo "testes.png" 100)
+             )
+           )
+           (make-arquivo "tcc.txt" 50)
+         )                
+       )
+    )
+  ) 
+  540
+)
+
+(check-expect 
+  (calcula-tamanho-lista 
+    (list
+      (make-diretorio "Imagens"
+        (list
+          (make-arquivo "algoritmo.png" 100)
+          (make-arquivo "resultados.png" 100)
+          (make-arquivo "testes.png" 100)
+        )
+      )
+      (make-diretorio "Teste" empty)
+    ) 
+  ) 
+  320
+)
+
+;; calcula-tamanho: Diretório -> Número
+;; Dado um diretório, calcula o tamanho necessário em disco para armazenar o diretório.
+;; Exemplos:
+;; (calcula-tamanho PASTA-JOÃO) = 10890
+;; (calcula-tamanho (make-diretorio "Teste" empty)) = 10
+;; (calcula-tamanho 
+;;   (make-diretorio "Fundamentos" 
+;;     (list
+;;       (make-arquivo "lista1-JoãoMarcosFlach-X.rkt" 50)
+;;       (make-arquivo "lista2-JoãoMarcosFlach-X.rkt" 50)
+;;       (make-arquivo "lista3-JoãoMarcosFlach-X.rkt" 50)
+;;     )  
+;;   )
+;; ) = 160
+
+;; Definição da função
+(define (calcula-tamanho diretorio)
+  ;; Soma
+  (+
+    ;; 10, devido ao tamanho do diretório
+    10
+    ;; O tamanho dos arquivos do diretório
+    (calcula-tamanho-arquivos (filter arquivo? (diretorio-conteudo diretorio)))
+    ;; O tamanhos dos sub-diretórios e os arquivos contidos nesses sub-diretórios
+    (calcula-tamanho-lista (filter diretorio? (diretorio-conteudo diretorio)))
+  )
+)
+
+;; Testes
+(check-expect (calcula-tamanho (make-diretorio "Vazio" empty)) 10)
+
+(check-expect 
+  (calcula-tamanho 
+    (make-diretorio "TCC" 
+      (list
+        (make-diretorio "Imagens"
+          (list
+            (make-arquivo "algoritmo.png" 100)
+            (make-arquivo "resultados.png" 100)
+            (make-arquivo "testes.png" 100)
+          )
+        )
+        (make-arquivo "tcc.txt" 50)
+      )                
+    )
+  ) 
+  370
+)
+
+(check-expect 
+  (calcula-tamanho 
+    (make-diretorio "Root" 
+      (list
+        (make-diretorio "Documentos" empty)
+        (make-diretorio "dev" empty)
+        (make-diretorio "Downloads" empty)
+        (make-diretorio "Fotos" empty)
+      )                
+    )
+  ) 
+  50
+)
+
+;; =========================================================================
+;;                                 QUESTÃO 5
+;; =========================================================================
+
+;; Um elemento DiretórioOuString é:
+;; 1) um elemento de Diretório
+;; ou
+;; 2) um elemento de String
+
+;; desenha-seta: Diretório -> DiretórioOuString
+;; Dado um Diretório e um DiretórioOuString, desenha na tela uma string contendo o caminho de um para o outro.
+;; Exemplos:
+;; (desenha-seta (make-diretorio "Teste" empty) "arquivo.mp3") = "Teste -> arquivo.mp3"
+;; (desenha-seta (make-diretorio "Documentos" empty) (make-diretorio "Fotos" empty)) = "Documentos -> Fotos"
+
+;; Definição da função
+(define (desenha-seta origem destino)
+  (cond
+    [(diretorio? destino) (string-append (diretorio-nome origem) " -> " (diretorio-nome destino))]
+    [else (string-append (diretorio-nome origem) " -> " destino)]
+  )
+)
+
+;; Testes:
+(check-expect (desenha-seta (make-diretorio "Downloads" empty) (make-diretorio "Jogos" empty)) "Downloads -> Jogos")
+(check-expect (desenha-seta (make-diretorio "Downloads" empty) "UFRGS") "Downloads -> UFRGS")
+
+;; mostra-caminho-lista: String ListaDeDiretorios -> String
+;; Dado o nome de um arquivo e uma lista de diretórios, retorna o caminho até o arquivo dentro do diretório.
+;; Exemplos:
+;; (mostra-caminho-lista "haskell.txt" empty) = "Arquivo não encontrado"
+;; (mostra-caminho-lista "lisp.png" empty) = "Arquivo não encontrado"
+;; (mostra-caminho-lista "profile.png" (diretorio-conteudo PASTA-JOÃO)) = "Imagens -> profile.png"
+
+;; Definição da função
+(define (mostra-caminho-lista arquivo diretorios)
+  (cond
+    ;; Se a lista de diretórios eestiver vazia, retorna "Arquivo não encontrado"
+    [(empty? diretorios) "Arquivo não encontrado"]
+    ;; Se o conteúdo do primeiro diretório da lista estiver vazio, monta o caminho até o arquivo do resto dos diretórios.
+    [(empty? (diretorio-conteudo (first diretorios))) (mostra-caminho-lista arquivo (rest diretorios))]
+    ;; Senão
+    [else
+      (cond
+        ;; Se o arquivo estiver no conteúdo do primeiro diretório da lista, desenha o caminho do primeiro diretório da lista até o arquivo
+        [(arquivo-no-dir? (diretorio-conteudo (first diretorios)) arquivo) 
+         (desenha-seta (first diretorios) arquivo)]
+        ;; Se o arquivo for encontrado no diretório os sub-diretórios do conteudo do primeiro diretório da lista, desenha o caminho do conteudo do conteúdo
+        ;; do primeiro diretório até o arquivo
+        [(arquivo-encontrado? (diretorio-conteudo (first diretorios)) arquivo) (desenha-seta (first diretorios) 
+         (mostra-caminho-lista arquivo (diretorio-conteudo (first diretorios))))]
+        ;; Senão, monta o caminho do resto dos diretórios até o arquivo
+        [else (mostra-caminho-lista arquivo (rest diretorios))]
+      )
+    ]
+  )
+)
+
+;; Testes
+(check-expect (mostra-caminho-lista "java.txt" empty) "Arquivo não encontrado")
+(check-expect (mostra-caminho-lista "python.txt" (diretorio-conteudo PASTA-JOÃO)) "Arquivo não encontrado")
+(check-expect (mostra-caminho-lista "lista3-JoãoMarcosFlach-X.rkt" (diretorio-conteudo PASTA-JOÃO)) "Faculdade -> Fundamentos -> lista3-JoãoMarcosFlach-X.rkt")
+
+;; mostra-caminho: Arquivo Diretório -> String
+;; Dado um diretório e um arquivo, desenha o caminho do diretório inicial até o arquivo, ou "Arquivo não encontrado" caso ele não exista no diretório.
+;; Exemplos:
+;; (mostra-caminho "unknown-artist-5.mp3" PASTA-JOÃO) = "João -> Música -> unknown-artist-5.mp3"
+;; (mostra-caminho "bitcoin.rkt" PASTA-JOÃO) = "Arquivo não encontrado"
+
+;; Definição da função
+(define (mostra-caminho arquivo diretorio)
+  (cond
+    ;; Se o arquivo não está no diretório e nem em nenhum dos seus sub-diretórios, retorna "Arquivo não encontrado"
+    [(not (arquivo-encontrado? (diretorio-conteudo diretorio) arquivo)) "Arquivo não encontrado"]
+    ;; Se o arquivo está no diretório atual, retorna o caminho do diretório atual até o arquivo
+    [(arquivo-no-dir? (diretorio-conteudo diretorio) arquivo) (desenha-seta diretorio arquivo)]
+    ;; Senão, procura o arquivo nos subdiretórios do diretórios atual
+    [else (desenha-seta diretorio (mostra-caminho-lista arquivo (filter diretorio? (diretorio-conteudo diretorio))))]
+  )
+)
+
+;; Testes
+(check-expect (mostra-caminho "jogo.txt" PASTA-JOÃO) "Arquivo não encontrado")
+(check-expect (mostra-caminho "tcc.txt" PASTA-JOÃO) "João -> Faculdade -> TCC -> tcc.txt")
+(check-expect (mostra-caminho "testes.png" PASTA-JOÃO) "João -> Faculdade -> TCC -> Imagens -> testes.png")

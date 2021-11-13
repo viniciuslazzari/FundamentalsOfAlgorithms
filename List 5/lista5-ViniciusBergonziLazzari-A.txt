@@ -1,0 +1,309 @@
+;;;;;;;;;;;; Vinícius Bergonzi Lazzari
+;;;;;;;;;;;; Lista 5
+
+;;; COMPLETE AS LACUNAS E FAÇA O QUE FOI PEDIDO NOS ENUNCIADOS DAS QUESTÕES
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 1 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Um elemento do conjunto falseOuString é:
+; 1. ou um elemento de Booleano (false)
+; 2. ou um elemento de Número
+
+; Um elemento do conjunto NumeroOuString é:
+; 1. ou um elemento de Número
+; 2. ou um elemento de String
+
+(define-struct cidadão (nome CPF idade sexo saude? covid? comorb gravidez?))
+
+;;Um elemento do cjto. Cidadão é uma estrutura (make-cidadão nome CPF idade sexo saude? covid? comorb gravidez?)
+;;onde:
+;; nome : String, é o nome do cidadão
+;; CPF : Número, é o CPF do cidadão
+;; idade : Número, é a idade do cidadão
+;; sexo : Booleano, é o sexo do cidadão (true para mulheres e false para homens)
+;; saude? : Booleano, indicia se o cidadão trabalha na área da saúde
+;; covid? : Booleano, indica se o cidadão já foi infectado pelo novo coronavírus
+;; comorb : falseOuString, indica existência ou tipo de comorbidade (false caso não exista, ou o nome da comorbidade em questão)
+;; gravidez? : Booleano, indica estado de gravidez
+
+(define-struct imunizante (nome fabricante quantidade umaDose?))
+;;Um elemento conjunto Imunizante é uma estrutura (make-imunizante nome fabricante quantidade umaDose?)
+;;onde
+;; nome : String, é o nome do imunizante
+;; fabricante : String, é o fabricante do imunizante
+;; quantidade : Número, é a quantidade em estoque do imunizante
+;; umaDose? : Booleano, indica se a administração do imunizante em questão se dá apenas em uma dose
+
+;; exemplos de instâncias:
+
+(define Vinicius (make-cidadão "Vinícius" 9255682407 18 false false false false true))
+(define Billy (make-cidadão "Billy" 67800874087 3 false true true false true))
+(define Julia (make-cidadão "Julia" 61092939032 25 true false true "Asma" false))
+(define Diogo (make-cidadão "Diogo" 56644341047 14 false true false "Diabetes" false))
+(define Sansa (make-cidadão "Sansa" 06080942003 60 true true false false true))
+(define Ana (make-cidadão "Ana" 52942114088 16 true false false false false))
+
+(define U (make-imunizante "U" "USP" 5432 true))
+(define A (make-imunizante "A" "Apple" 1100 false))
+(define B (make-imunizante "B" "UFRGS" 1000 false))
+(define C (make-imunizante "C" "Amazon" 900 true))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 2 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; checa-erro : Cidadão -> NumeroOuString
+;; dado um elemento do conjunto Cidadão, verifica se o cidadão em questão é do sexo masculino e possui
+;; indicador de gravidez verdadeiro, nesse caso retorna o CPF do cidadão, caso contrário, retorna "CPF OK"
+
+; ;; exemplos:
+; (checa-erro Diogo) = "CPF OK"
+; (checa-erro Billy) = 67800874087
+
+;; Corpo da função:
+(define 
+  (checa-erro cidadão)
+  (cond
+    ;; Caso o cidadão seja do sexo masculino (sexo = false) e possua indicador de gravidez igual a true,
+    ;; retorna o CPF do cidadão
+    [(and (not (cidadão-sexo cidadão)) (cidadão-gravidez? cidadão)) (cidadão-CPF cidadão)]
+    ;; Caso contrário, retorna "CPF OK"
+    [else "CPF OK"]
+  )
+)
+
+;; Testes:
+(check-expect (checa-erro Vinicius) 9255682407)
+(check-expect (checa-erro Julia) "CPF OK")
+(check-expect (checa-erro Diogo) "CPF OK")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 3 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; prioridade : Cidadão -> String
+;; Dado um elemento do conjunto Cidadão, retorna o mês de vacinação, de acordo com o
+;; calendário de vacinação.
+
+; exemplos:
+; (prioridade Vinicius) = "Dados deste CPF devem ser verificados!"
+; (prioridade Sansa) = "jan"
+; (prioridade Diogo) = "Aguarde novo calendário"
+
+;; Corpo da função:
+(define 
+  (prioridade cidadão)
+  (cond
+    ;; Caso os dados do cidadão estejam inválidos, retorna "Dados deste CPF devem ser verificados!"
+    [(number? (checa-erro cidadão)) "Dados deste CPF devem ser verificados!"]
+    ;; Caso o cidadão possua idade igual ou menor a 14 anos, retorna "Aguarde novo calendário"
+    [(<= (cidadão-idade cidadão) 14) "Aguarde novo calendário"]
+    ;; Caso o cidadão seja da área da saúde, retorna "jan"
+    [(cidadão-saude? cidadão) "jan"]
+    ;; Caso o cidadão possua mais que 80 anos, retorna "fev"
+    [(>= (cidadão-idade cidadão) 80) "fev"]
+    ;; Caso o cidadão possua mais que 70 anos, retorna "mar"
+    [(>= (cidadão-idade cidadão) 70) "mar"]
+    ;; Caso o cidadão possua mais que 60 anos, retorna "abr"
+    [(>= (cidadão-idade cidadão) 60) "abr"]
+    ;; Caso o cidadão possua alguma comorbidade ou possua indicador de gravidez igual a true, retorna "mai", contanto
+    ;; que o cidadão possua pelo menos 15 anos
+    [(and (>= (cidadão-idade cidadão) 15) (or (string? (cidadão-comorb cidadão)) (cidadão-gravidez? cidadão))) "mai"]
+    ;; Caso o cidadão possua mais que 50 anos, retorna "jun"
+    [(>= (cidadão-idade cidadão) 50) "jun"]
+    ;; Caso o cidadão possua mais que 40 anos, retorna "jul"
+    [(>= (cidadão-idade cidadão) 40) "jul"]
+    ;; Caso o cidadão possua mais que 18 anos, retorna "ago"
+    [(>= (cidadão-idade cidadão) 18) "ago"]
+    ;; Caso o cidadão possua mais que 15 anos, retorna "set"
+    [(>= (cidadão-idade cidadão) 15) "set"]
+  )
+)
+
+; testes:
+(check-expect (prioridade Julia) "mai")
+(check-expect (prioridade Billy) "Dados deste CPF devem ser verificados!")
+(check-expect (prioridade Ana) "set")
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 4 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; imunizante-valido : Cidadão Imunizante -> Booleano
+; Dado um elemento do conjunto Cidadão e um elemento do conjunto Imunizante, retorna se o imunizante em questão
+; é adequado para o cidadão em questão
+
+; exemplos:
+; (imunizante-valido Sansa U) = false
+; (imunizante-valido Sansa A) = true
+; (imunizante-valido Diogo C) = false
+
+;; Corpo da função:
+(define
+  (imunizante-valido cidadão imunizante)
+  (cond
+    ;; Caso o imunizante possua menos que 1000 unidade em estoque, retorna falso
+    [(< (imunizante-quantidade imunizante) 1000) false]
+    ;; Caso o cidadão possua comorbidade e o nome do imunizante não for "U", retorna falso
+    [(and (string? (cidadão-comorb cidadão)) (not (string=? (imunizante-nome imunizante) "U"))) false]
+    ;; Caso o cidadão seja do sexo feminino e possua indicador de gravidez e o nome do imunizante não for "A", retorna falso
+    [(and (and (cidadão-gravidez? cidadão) (cidadão-sexo cidadão)) (not (string=? (imunizante-nome imunizante) "A"))) false]
+    ;; Caso o cidadão possua idade menor que 18 anos, porém maior ou igual a 15 anos, e o nome do imunizante não for "B", retorna falso
+    [(and (and (< (cidadão-idade cidadão) 18) (>= (cidadão-idade cidadão) 15)) (not (string=? (imunizante-nome imunizante) "B"))) false]
+    ;; Caso contrário, retorna verdadeiro
+    [else true]
+  )
+)
+
+;; testes:
+(check-expect (imunizante-valido Ana B) true)
+(check-expect (imunizante-valido Billy U) true)
+(check-expect (imunizante-valido Billy C) false)
+(check-expect (imunizante-valido Julia U) true)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 5 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;; 5a
+
+; Um elemento do conjunto NumeroOuString é:
+; 1. ou um elemento de Número
+; 2. ou um elemento de String
+
+(define-struct entrada (nome 14d 30d 60d 90d covid_sim covid_nao etaria1 etaria2))
+
+; um elemento do cjto. Entrada é uma estrutura (make-entrada nome 14d 30d 60d 90d covid_sim covid_nao etaria1 etaria2)
+; onde:
+; nome: String, é o nome do imunizante
+; 14d: NumeroOuString, representa a eficácia do imunizante passado 14 dias da sua aplicação, caso não possuam dados, recebe "--"
+; 30d: NumeroOuString, representa a eficácia do imunizante passado 30 dias da sua aplicação, caso não possuam dados, recebe "--"
+; 60d: NumeroOuString, representa a eficácia do imunizante passado 60 dias da sua aplicação, caso não possuam dados, recebe "--"
+; 90d: NumeroOuString, representa a eficácia do imunizante passado 90 dias da sua aplicação, caso não possuam dados, recebe "--"
+; covid_sim: Número, representa a eficácia do imunizante em pacientes que tiveram infecção prévia
+; covid_nao: Número, representa a eficácia do imunizante em pacientes que não tiveram infecção prévia
+; etaria1: Número, representa a eficácia do imunizante em pacientes entre os 18 e 34 anos
+; etaria2: Número, representa a eficácia do imunizante em pacientes entre os 35 e 54 anos
+
+; instâncias de Entrada
+(define linhaB (make-entrada "B" 69 "--" "--" 61 88 68 73 54))
+
+;; crie outra(s) instâncias
+(define linhaA (make-entrada "A" 94 90 88 78 93 85 90 77))
+(define linhaC (make-entrada "C" "--" 90 85 "--" 70 65 50 100))
+
+;;;;;;;; 5b
+
+(define-struct resultado (eficacia_dias eficacia_infecção eficacia_idade))
+
+;;Um elemento do cjto. Resultado é uma estrutura (make-resultado eficacia_dias eficacia_infecção eficacia_idade)
+;;onde:
+;; eficacia_dias: NumeroOuString, representa a eficácia do imunizante baseada no números de dias da aplicação do imunizante
+;; eficacia_infecção: Número, representa a eficácia do imunizante baseada no fator de infecção prévia do paciente
+;; eficacia_idade: Número, representa a eficácia do imunizante baseada na idade do paciente
+
+;;;;;;;;;; 5c
+
+; retorna-eficacia-dias : Número Entrada -> NumeroOuString
+; Dado um número e uma entrada, representando respectivamente o número de dias após a aplicação de um imunizante e seus dados
+; de eficácia, retorna sua eficácia baseada nos dias após a aplicação
+; testes:
+; (retorna-eficacia-dias 14 linhaA) = 94
+; (retorna-eficacia-dias 90 linhaA) = 78
+; (retorna-eficacia-dias 90 linhaB) = "--"
+
+;; Corpo da função:
+(define 
+  (retorna-eficacia-dias dias entrada)
+  (cond
+    ;; Caso tenha passado 14 dias após a aplicação do imunizante, retorna a eficácia depois de 14 dias
+    [(= dias 14) (entrada-14d entrada)]
+    ;; Caso tenha passado 30 dias após a aplicação do imunizante, retorna a eficácia depois de 30 dias
+    [(= dias 30) (entrada-30d entrada)]
+    ;; Caso tenha passado 60 dias após a aplicação do imunizante, retorna a eficácia depois de 60 dias
+    [(= dias 60) (entrada-60d entrada)]
+    ;; Caso tenha passado 90 dias após a aplicação do imunizante, retorna a eficácia depois de 90 dias
+    [(= dias 90) (entrada-90d entrada)]
+  )
+)
+
+;; Testes:
+(check-expect (retorna-eficacia-dias 30 linhaC) 90)
+(check-expect (retorna-eficacia-dias 14 linhaC) "--")
+(check-expect (retorna-eficacia-dias 90 linhaB) 61)
+
+; retorna-eficacia-infecção : Booleano Entrada -> Número
+; Dado um booleano e uma entrada, representando respectivamente o fator de infecção prévia de um paciente e os dados
+; de eficácia de um imunizante, retorna sua eficácia baseada no fator de infecção prévia
+; testes:
+; (retorna-eficacia-infecção true linhaB) = 88
+; (retorna-eficacia-infecção false linhaB) = 68
+; (retorna-eficacia-infecção false linhaA) = 85
+
+;; Corpo da função:
+(define 
+  (retorna-eficacia-infecção infecção_prévia? entrada)
+  (cond
+    ; Caso o paciente possua infecção prévia, retorna a eficácia do imunizante para quando existe infecção prévia
+    [infecção_prévia? (entrada-covid_sim entrada)]
+    ; Caso contrário, retorna a eficácia do imunizante para quando não existe infecção prévia
+    [else (entrada-covid_nao entrada)]
+  )
+)
+
+;; Testes:
+(check-expect (retorna-eficacia-infecção true linhaC) 70)
+(check-expect (retorna-eficacia-infecção false linhaC) 65)
+(check-expect (retorna-eficacia-infecção true linhaA) 93)
+
+; retorna-eficacia-idade : Número Entrada -> Número
+; Dado um número e uma entrada, representando respectivamente a idade de um paciente e os dados
+; de eficácia de um imunizante, retorna sua eficácia baseada na faixa etária
+; testes:
+; (retorna-eficacia-idade 18 linhaA) = 90
+; (retorna-eficacia-idade 35 linhaA) = 77
+; (retorna-eficacia-idade 35 linhaB) = 54
+
+;; Corpo da função:
+(define 
+  (retorna-eficacia-idade idade entrada)
+  (cond
+    ; Caso o paciente se encaixe na faixa etária 1 (entre 18 e 34 anos), retorna a eficacia do imunizante para essa faixa etária
+    [(<= 18 idade 34) (entrada-etaria1 entrada)]
+    ; Caso contrário, retorna a eficácia do imunizante para a faixa etária 2
+    [else (entrada-etaria2 entrada)]
+  )
+)
+
+;; Testes:
+(check-expect (retorna-eficacia-idade 18 linhaB) 73)
+(check-expect (retorna-eficacia-idade 18 linhaC) 50)
+(check-expect (retorna-eficacia-idade 54 linhaC) 100)
+
+
+; 3eficacias : Cidadão Numero Entrada -> Resultado
+; Dado um elemento do conjunto Cidadão, um Número, e uma Entrada, representando respectivamente um cidadão, o número de dias
+; após a aplicação do imunizante e os dados de eficácia do imunizante em questão, retorna o resultado contendo as três eficácias
+; baseadas no número de dias após a aplicação, fator de infecção prévia e idade.
+; exemplos:
+; (3eficacias Vinicius 14 linhaA) = (make-resultado 94 85 90)
+; (3eficacias Vinicius 90 linhaA) = (make-resultado 78 85 90)
+; (3eficacias Julia 60 linhaB) = (make-resultado "--" 88 73)
+
+;; Corpo da função:
+(define
+  (3eficacias cidadão dias entrada)
+  (make-resultado 
+    (retorna-eficacia-dias dias entrada) 
+    (retorna-eficacia-infecção (cidadão-covid? cidadão) entrada) 
+    (retorna-eficacia-idade (cidadão-idade cidadão) entrada)
+  )
+)
+
+; testes:
+(check-expect (3eficacias Sansa 60 linhaC) (make-resultado 85 65 100))
+(check-expect (3eficacias Julia 14 linhaC) (make-resultado "--" 70 50))
+(check-expect (3eficacias Sansa 30 linhaA) (make-resultado 90 85 77))

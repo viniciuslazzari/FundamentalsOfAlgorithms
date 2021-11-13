@@ -1,0 +1,424 @@
+;; Nome: Vinícius Bergonzi Lazzari
+;; Lista 8
+
+;; ==============================================================
+;; 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+;; ==============================================================
+;; ============================
+;; DEFINIÇÕES DE TIPOS DE DADOS
+;; ============================
+;; TIPO RETANGULO:
+(define-struct retangulo (lado1 lado2 cor nome))
+;; Um elemento de Retangulo tem o formato
+;;      (make-retangulo l1 l2 c n), onde
+;;      l1: Número, é a largura do retângulo;
+;;      l2: Número, é a altura do retângulo;
+;;      c : String, é a cor do retângulo;
+;;      n : String, é o nome do retângulo.
+(define R1 (make-retangulo 30 60 "red" "R1"))
+(define R2 (make-retangulo 40 40 "green" "R2"))
+
+;; TIPO TRIANGULO:
+(define-struct triangulo (lado cor nome))
+;; Um elemento de Triangulo tem o formato
+;;      (make-triangulo l c n), onde
+;;      l: Número, é o lado do triângulo;
+;;      c : String, é a cor do triângulo;
+;;      n : String, é o nome do triângulo.
+(define T1 (make-triangulo 30 "blue" "T1"))
+(define T2 (make-triangulo 40 "red" "T2"))
+
+;; TIPO CIRCULO:
+(define-struct circulo (raio cor nome))
+;; Um elemento de Circulo tem o formato
+;;      (make-circulo r c n), onde
+;;      r: Número, é o raio do circulo;
+;;      c : String, é a cor do circulo;
+;;      n : String, é o nome do circulo.
+(define C1 (make-circulo 20 "pink" "C1"))
+(define C2 (make-circulo 30 "red" "C2"))
+
+;; Uma Forma pode ser
+;; 1. um Retangulo, ou
+;; 2. um Triangulo, ou
+;; 3. um Circulo
+
+;; Uma ListaDeFormas é
+;; 1. vazia (empty), ou
+;; 2. (cons f lf), onde
+;;      f : Forma
+;;      lf : ListaDeFormas
+
+;; Uma ListaDeString é
+;; 1. vazia (empty), ou
+;; 2. (cons f lf), onde
+;;       f : String
+;;      lf : ListaDeString
+
+;; Constantes do tipo ListaDeFormas:
+(define L1 (cons C1 empty))
+(define L2 (cons C1 (cons C2 (cons T1 (cons T2 (cons R1 (cons R2 empty)))))))
+(define L3 (cons T1 (cons T1 (cons R2 (cons T1 (cons R1 (cons T2 (cons R1 empty))))))))
+(define L4 (cons C2 (cons C2 (cons C2 (cons T2 empty)))))
+
+(define L5 empty)
+(define L6 (cons C2 (cons C1 (cons C2 (cons C1 empty)))))
+(define L7 (cons R1 (cons R1 empty)))
+(define L8 (cons R1 (cons T1 (cons R2 (cons T2 (cons C2 (cons R1 empty)))))))
+
+;; =====================
+;; DEFINIÇÕES DE FUNÇÕES
+;; =====================
+
+;; desenha : Forma -> Imagem
+;; Dada uma forma, gera uma imagem desta forma.
+;; Exemplos:
+;; (desenha C1) = (circle 20 "solid" "pink")
+;; (desenha (T2) = (triangle 40 "solid" "red")
+(define (desenha f)
+   (cond
+        [(retangulo? f) (rectangle (retangulo-lado1 f) (retangulo-lado2 f) "solid" (retangulo-cor f))]
+        [(triangulo? f) (triangle (triangulo-lado f) "solid" (triangulo-cor f))]
+        [(circulo? f) (circle (circulo-raio f) "solid" (circulo-cor f))]))
+;; Testes:
+(check-expect (desenha C1) (circle 20 "solid" "pink"))
+(check-expect (desenha T2) (triangle 40 "solid" "red"))
+
+;; ==============================================================
+;; A A A A A A A A A ==> lista-retangulos
+;; ==============================================================
+;; lista-retangulos : ListaFormas -> ListaFormas
+;; Obj: Dada uma lista de formas, devolve uma lista com todos os retangulos
+;; da lista original.
+;; Exemplos:
+;; (lista-retangulos L4) = empty
+;; (lista-retangulos L2) = (cons R1 (cons R2 empty))
+
+;; (define (lista-retangulos lf)
+;;     (cond
+;;         [(empty? lf) empty]
+;;         [(retangulo? (first lf)) (cons (first lf) (lista-retangulos (rest lf)))]
+;;         [else (lista-retangulos (rest lf))]))
+
+;; Corpo da função
+(define (lista-retangulos lf)
+  (filter retangulo? lf)
+)
+
+;; Testes:
+(check-expect (lista-retangulos L5) empty)
+(check-expect (lista-retangulos L6) empty)
+(check-expect (lista-retangulos L7) (cons R1 (cons R1 empty)))
+(check-expect (lista-retangulos L8) (cons R1 (cons R2 (cons R1 empty))))
+
+;; ==============================================================
+;; B B B B B B B B ==> lista-nomes-retangulos
+;; ==============================================================
+;; lista-nomes-retangulos : ListaDeFormas -> ListaDeString
+;; Obj: Dada uma lista de formas, devolve uma lista com os nomes de todos os retangulos
+;; da lista original.
+;; Exemplos:
+;; (lista-nomes-retangulos L3) = empty
+;; (lista-nomes-retangulos L2) = (cons "R1" (cons "R2" empty))
+
+;; (define (lista-nomes-retangulos lf)
+;;     (cond
+;;         [(empty? lf) empty]
+;;         [(retangulo? (first lf)) (cons (retangulo-nome (first lf)) (lista-nomes-retangulos (rest lf)))]
+;;         [else (lista-nomes-retangulos (rest lf))]))
+
+;; Corpo da função
+(define (lista-nomes-retangulos lf)
+  (map retangulo-nome (filter retangulo? lf))
+)
+
+;; Testes:
+(check-expect (lista-nomes-retangulos L5) empty)
+(check-expect (lista-nomes-retangulos L6) empty)
+(check-expect (lista-nomes-retangulos L7) (cons "R1" (cons "R1" empty)))
+(check-expect (lista-nomes-retangulos L8) (cons "R1" (cons "R2" (cons "R1" empty))))
+
+;; ==============================================================
+;; C C C C C C C C ==> lista-retangulos-img
+;; ==============================================================
+;; lista-retangulos-img : ListaDeFormas -> Imagem
+;; Obj: Dada uma lista de formas, devolve uma imagem com todos
+;; os retangulos da lista original, na ordem inversa na qual
+;; eles aparecem na lista
+;; Exemplos: 
+;; (lista-retangulos-img L2) = (beside (rectangle 40 40 "solid" "green") (rectangle 30 60 "solid" "red"))
+;; (lista-retangulos-img L1) = empty-image
+
+;; (define (lista-retangulos-img lf)
+;;     (cond
+;;         [(empty? lf) empty-image]
+;;         [(retangulo? (first lf))
+;;          (beside (lista-retangulos-img (rest lf))
+;;                      (desenha (first lf)))]
+;;         [else (lista-retangulos-img (rest lf))]))
+
+;; Corpo da função
+(define (lista-retangulos-img lf)
+  (foldl beside empty-image (map desenha (filter retangulo? lf)))
+)
+
+;; Testes:
+(check-expect (lista-retangulos-img L5) empty-image)
+(check-expect (lista-retangulos-img L6) empty-image)
+(check-expect (lista-retangulos-img L7) (beside (rectangle 30 60 "solid" "red") (rectangle 30 60 "solid" "red")))
+(check-expect (lista-retangulos-img L8) (beside (rectangle 30 60 "solid" "red") (rectangle 40 40 "solid" "green") (rectangle 30 60 "solid" "red")))
+
+;; ==============================================================
+;; D D D D D D D D ==> soma-raios-circulos
+;; ==============================================================
+;; soma-raios-circulos : ListaDeFormas -> Numero
+;; Obj: Dada uma lista de formas, devolve a soma dos tamanhos dos raios dos circulos da lista.
+;; Exemplos: 
+;; (soma-raios-circulos L2) = 50
+;; (soma-raios-circulos L1) = 30
+
+;; (define (soma-raios-circulos lf)
+;;     (cond
+;;         [(empty? lf) 0]
+;;         [(circulo? (first lf)) (+ (circulo-raio (first lf))(soma-raios-circulos (rest lf)))]
+;;         [else (soma-raios-circulos(rest lf))]))
+
+;; Corpo da função
+(define (soma-raios-circulos lf)
+  (foldl + 0 (map circulo-raio (filter circulo? lf)))
+)
+
+;; Testes:
+(check-expect (soma-raios-circulos L5) 0)
+(check-expect (soma-raios-circulos L6) 100)
+(check-expect (soma-raios-circulos L7) 0)
+(check-expect (soma-raios-circulos L8) 30)
+
+;; ==============================================================
+;; E E E E E E E E ==> desenha-lista-formas
+;; ==============================================================
+;; desenha-lista-formas: ListaDeFormas -> Imagem
+;; Obj: Dada uma lista de formas, monta uma imagem com todas as formas lado a lado,
+;; na mesma ordem na qual elas aparecem na lista.
+;; Exemplos:
+;; (desenha-lista-formas L2) = (beside (circle 20 "solid" "pink") (circle 30 "solid" "red") (triangle 30 "solid" "blue") (triangle 40 "solid" "red") (rectangle 30 60 "solid" "red") (rectangle 40 40 "solid" "green"))
+;; (desenha-lista-formas L3) = (beside (triangle 30 "solid" "blue") (triangle 30 "solid" "blue") (rectangle 40 40 "solid" "green") (triangle 30 "solid" "blue") (rectangle 30 60 "solid" "red") (triangle 40 "solid" "red") (rectangle 30 60 "solid" "red"))
+
+;; (define (desenha-lista-formas lf)
+;;     (cond
+;;         [(empty? lf) empty-image]
+;;         [else (beside (desenha (first lf))
+;;                              (desenha-lista-formas (rest lf)))]))
+
+;; Corpo da função
+(define (desenha-lista-formas lf)
+  (foldl beside empty-image (foldl cons empty (map desenha lf)))
+)
+
+;; Testes:
+(check-expect (desenha-lista-formas L5) empty-image)
+(check-expect (desenha-lista-formas L6) (beside
+  (circle 30 "solid" "red")
+  (circle 20 "solid" "pink")
+  (circle 30 "solid" "red")
+  (circle 20 "solid" "pink")
+))
+(check-expect (desenha-lista-formas L7) (beside
+  (rectangle 30 60 "solid" "red")
+  (rectangle 30 60 "solid" "red")
+))
+(check-expect (desenha-lista-formas L8) (beside
+  (rectangle 30 60 "solid" "red")
+  (triangle 30 "solid" "blue")
+  (rectangle 40 40 "solid" "green")
+  (triangle 40 "solid" "red")
+  (circle 30 "solid" "red")
+  (rectangle 30 60 "solid" "red")
+))
+
+;; ==============================================================
+;; 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+;; ==============================================================
+
+
+(define-struct filme (nome ano categoria estrelas disponivel?))
+;; Um elemento do conjunto Filme tem o formato
+;; (make-filme n a c e d) onde
+;; n : String, é o nome do filme
+;; a : ano, é o ano de lançamento do filme
+;; c : String, é a categoria do filme, que pode ser "Aventura", "Ficção" ou "Comédia"
+;; e : Número, é o número médio de estrelas que o filme recebeu dos espectadores
+;; d : Booleano, diz se o filme está disponível ou não no momento
+
+;; Uma ListaDeFilmes é
+;; 1. vazia (empty), ou
+;; 2. (cons f lf) onde f: Filme e lf:ListaDeFilmes
+
+;; CONSTANTES DE FILMES
+(define FILME1 (make-filme "Interstellar" 2014 "Ficção" 5 true))
+(define FILME2 (make-filme "O lobo de Wall Street" 2013 "Drama" 4.5 true))
+(define FILME3 (make-filme "Your Name" 2016 "Animação" 4 false))
+(define FILME4 (make-filme "500 dias com ela" 2009 "Drama" 5 true))
+(define FILME5 (make-filme "Star Wars" 2016 "Ficção" 3 true))
+(define FILME6 (make-filme "A rede social" 2010 "Drama" 5 true))
+(define FILME7 (make-filme "A teoria de tudo" 2014 "Drama" 4 false))
+(define FILME8 (make-filme "Inception" 2010 "Ficção" 5 false))
+
+;; CONSTANTES DE LISTA DE FILMES
+(define LISTA-DE-FILMES1 empty)
+(define LISTA-DE-FILMES2 (cons FILME1 (cons FILME2 (cons FILME3 (cons FILME4 (cons FILME5 (cons FILME6 (cons FILME7 (cons FILME8 empty)))))))))
+(define LISTA-DE-FILMES3 (cons FILME1 (cons FILME3 (cons FILME5 empty))))
+(define LISTA-DE-FILMES4 (cons FILME1 (cons FILME1 (cons FILME7 empty))))
+(define LISTA-DE-FILMES5 (cons FILME2 empty))
+(define LISTA-DE-FILMES6 (cons FILME3 (cons FILME4 (cons FILME7 (cons FILME8 empty)))))
+
+;; =========================================================
+;; A A A A A A A A A A A A A A A A A A A A A A A A A A A A A
+;; =========================================================
+;; filme-disponivel: Filme -> Boleano
+;; Obj: Dado um filme, retorna se o mesmo está disponível.
+;; Exemplos:
+;; (filme-disponivel FILME1) = true
+;; (filme-disponivel FILME3) = false
+
+;; Corpo da função
+(define (filme-disponivel f)
+  (filme-disponivel? f)
+) 
+
+;; Testes
+(check-expect (filme-disponivel FILME5) true)
+(check-expect (filme-disponivel FILME8) false)
+
+;; ########################################################
+
+;; filme-ano-2014: Filme -> Boleano
+;; Obj: Dado um filme, retorna se o o mesmo possui ano igual ou maior a 2014.
+;; Exemplos:
+;; (filme-ano-2014 FILME1) = true
+;; (filme-ano-2014 FILME2) = false
+
+;; Corpo da função
+(define (filme-ano-2014 f)
+  (<= 2014 (filme-ano f))
+) 
+
+;; Testes
+(check-expect (filme-ano-2014 FILME6) false)
+(check-expect (filme-ano-2014 FILME3) true)
+
+;; ########################################################
+
+;; filme-ficção?: Filme -> Boleano
+;; Obj: Dado um filme, retorna se o mesmo é da categoria de "Ficção".
+;; Exemplos:
+;; (filme-drama? FILME1) = true
+;; (filme-drama? FILME2) = false
+
+;; Corpo da função
+(define (filme-ficção? f)
+  (string=? (filme-categoria f) "Ficção")
+) 
+
+;; Testes
+(check-expect (filme-ficção? FILME6) false)
+(check-expect (filme-ficção? FILME8) true)
+
+;; =========================================================
+;; B B B B B B B B B B B B B B B B B B B B B B B B B B B B B
+;; =========================================================
+
+;; filtra-ficção : ListaDeFilmes -> ListaDeFilmes
+;; Obj: Dada uma lista de filmes, retorna o nome dos filmes de ficção da lista.
+;; Exemplos: 
+;; (filtra-ficção LISTA-DE-FILMES6) = (cons "Inception" empty)
+;; (filtra-ficção LISTA-DE-FILMES1) = empty
+
+;; Corpo da função
+(define (filtra-ficção lf)
+  (map filme-nome (filter filme-ficção? lf))
+)
+
+;; Testes
+(check-expect (filtra-ficção LISTA-DE-FILMES2) (cons "Interstellar" (cons "Star Wars" (cons "Inception" empty))))
+(check-expect (filtra-ficção LISTA-DE-FILMES1) empty)
+(check-expect (filtra-ficção LISTA-DE-FILMES4) (cons "Interstellar" (cons "Interstellar" empty)))
+
+;; =========================================================
+;; C C C C C C C C C C C C C C C C C C C C C C C C C C C C C
+;; =========================================================
+
+;; filtra-ficção-disp : ListaDeFilmes -> ListaDeFilmes
+;; Obj: Dada uma lista de filmes, retorna o nome dos filmes de ficção da lista que estão disponíveis.
+;; Exemplos: 
+;; (filtra-ficção-disp LISTA-DE-FILMES5) = empty
+;; (filtra-ficção-disp LISTA-DE-FILMES4) = (cons "Interstellar" (cons "Interstellar" empty))
+
+;; Corpo da função
+(define (filtra-ficção-disp lf)
+  (map filme-nome (filter filme-disponivel (filter filme-ficção? lf)))
+)
+
+;; Testes
+(check-expect (filtra-ficção-disp LISTA-DE-FILMES1) empty)
+(check-expect (filtra-ficção-disp LISTA-DE-FILMES2) (cons "Interstellar" (cons "Star Wars" empty)))
+(check-expect (filtra-ficção-disp LISTA-DE-FILMES6) empty)
+
+;; =========================================================
+;; D D D D D D D D D D D D D D D D D D D D D D D D D D D D D
+;; =========================================================
+
+;; média-estrelas : ListaDeFilmes -> Número
+;; Obj: Dada uma lista de filmes, retorna a média da avaliação dos filmes da lista.
+;; Exemplos: 
+;; (média-estrelas LISTA-DE-FILMES3) = 4
+;; (média-estrelas LISTA-DE-FILMES5) = 4.5
+
+;; Corpo da função
+(define (média-estrelas lf)
+  (/ (foldl + 0 (map filme-estrelas lf)) (length lf))
+)
+
+;; Testes
+(check-expect (média-estrelas LISTA-DE-FILMES2) 4.4375)
+(check-expect (média-estrelas LISTA-DE-FILMES6) 4.5)
+(check-within (média-estrelas LISTA-DE-FILMES4) 4.6 0.1)
+
+;; =========================================================
+;; E E E E E E E E E E E E E E E E E E E E E E E E E E E E E
+;; =========================================================
+
+;; filtra-lista-filmes : ListaDeFilmes (Filme -> Booleano) -> ListaDeFilmes
+;; Obj: Dada uma lista de filmes e um critério de avaliação, retorna a lista inicial filtrada pelo critério.
+;; Exemplos: 
+;; (filtra-lista-filmes LISTA-DE-FILMES3 filme-ano-2014) = (cons FILME1 (cons FILME3 (cons FILME5 empty)))
+;; (filtra-lista-filmes LISTA-DE-FILMES5 filme-disponivel) = (cons FILME2 empty)
+
+;; Corpo da função
+(define (filtra-lista-filmes lf criterio)
+  (filter criterio lf)
+)
+
+;; Testes
+(check-expect (filtra-lista-filmes LISTA-DE-FILMES2 filme-ficção?) (cons FILME1 (cons FILME5 (cons FILME8 empty))))
+(check-expect (filtra-lista-filmes LISTA-DE-FILMES1 filme-ano-2014) empty)
+(check-expect (filtra-lista-filmes LISTA-DE-FILMES6 filme-disponivel) (cons FILME4 empty))
+
+;; =========================================================
+;; F F F F F F F F F F F F F F F F F F F F F F F F F F F F F
+;; =========================================================
+
+;; filtra-ano : ListaDeFilmes Número -> ListaDeFilmes
+;; Obj: Dada uma lista de filmes e um ano, retorna os filmes que possuem ano maior ou igual ao ano de entrada.
+;; Exemplos: 
+;; (filtra-ano LISTA-DE-FILMES6 2014) = (cons FILME3 (cons FILME7 empty))
+;; (filtra-ano LISTA-DE-FILMES3 2011) = (cons FILME1 (cons FILME3 (cons FILME5 empty)))
+
+;; Corpo da função
+(define (filtra-ano lf ano)
+  (filter (lambda (f) (<= ano (filme-ano f))) lf)
+)
+
+;; Testes
+(check-expect (filtra-ano LISTA-DE-FILMES2 2015) (cons FILME3 (cons FILME5 empty)))
+(check-expect (filtra-ano LISTA-DE-FILMES1 2000) empty)

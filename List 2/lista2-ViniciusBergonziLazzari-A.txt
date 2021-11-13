@@ -1,0 +1,169 @@
+;; Nome: Vinícius Bergonzi Lazzari
+
+;; ==============================================================
+;; 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+;; ==============================================================
+;; calcula-porcentagem: Número Número -> Número
+;; obj: Dados dois número, que correspondem a um valor e um total
+;;      calcula e devolve a porcentagem do valor sobre o total
+;; Exemplos:
+;;      (calcula-porcentagem 50 100) = 50
+;;      (calcula-porcentagem 1.25 4) = 31.25
+
+(define (calcula-porcentagem valor total)
+    (* 
+        valor 
+        (/ 100 total)
+    )
+)
+
+;; Testes:
+(check-expect (calcula-porcentagem 66 300) 22)
+(check-expect (calcula-porcentagem 0.25 2) 12.5)
+
+;; ==============================================================
+;; 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+;; ==============================================================
+;; vacinados: String Número Número -> String
+;; obj: Dados uma string e dois números, correspondentes ao nome de
+;;      um país, a população e a quantidade de pessoas vacinadas
+;;      nesse país, devolve uma string relatando a porcentagem de
+;;      pessoas vacinadas em relação a população total.
+;; Exemplos:
+;;      (vacinados "Brasil" 10 1) = "No país Brasil foram vacinados 10% dos habitantes."
+;;      (vacinados "Uruguai" 200 10) = "No país Uruguai foram vacinados 5% dos habitantes."
+
+;; Código
+(define (vacinados pais populacao qtdvacinados)
+    (string-append
+         "No país " pais 
+         " foram vacinados " 
+         (number->string
+              (calcula-porcentagem 
+                   qtdvacinados 
+                   populacao
+              )
+         ) "% dos habitantes."
+    )
+)
+
+;; Testes:
+(check-expect (vacinados "Canadá" 1000 30) "No país Canadá foram vacinados 3% dos habitantes.")
+(check-expect (vacinados "Nova Zelândia" 500 125) "No país Nova Zelândia foram vacinados 25% dos habitantes.")
+
+;; ==============================================================
+;; 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+;; ==============================================================
+;; barra-porcentagens: Número Número String String -> Imagem
+;; obj: Dados dois números e duas strings, desenhe uma barra de largura 30
+;;      e altura 100, onde P1% da altura deve ser pintada na cor C1 (parte 
+;;      inferior da barra), P2% na cor C2 (parte do meio) e o resto de cinza.
+;; Exemplos:
+;; (barra-porcentagens 30 20 "darkgreen" "green") =
+;;                                    (above
+;;                                                (rectangle 30 50 "solid" "gray")
+;;                                                (rectangle 30 20 "solid" "green")
+;;                                                (rectangle 30 30 "solid" "darkgreen")))
+;; (barra-porcentagens 70 30 "orange" "yellow") =
+;;                                    (above
+;;                                                (rectangle 30 0 "solid" "gray")
+;;                                                (rectangle 30 30 "solid" "yellow")
+;;                                                (rectangle 30 70 "solid" "orange"))
+;; (barra-porcentagens 10 10 "black" "black") =
+;;                                    (above
+;;                                                (rectangle 30 80 "solid" "gray")
+;;                                                (rectangle 30 10 "solid" "black")
+;;                                                (rectangle 30 10 "solid" "black"))
+
+
+;; Código
+(define (barra-porcentagens p1 p2 c1 c2)
+    (above
+        (rectangle 30 (- 100 (+ p1  p2)) "solid" "gray")
+        (rectangle 30 p2 "solid" c2)
+        (rectangle 30 p1 "solid" c1)
+    )
+)
+
+;; Testes:
+(check-expect (barra-porcentagens 30 20 "darkgreen" "green")
+              (above
+                  (rectangle 30 50 "solid" "gray")
+                  (rectangle 30 20 "solid" "green")
+                  (rectangle 30 30 "solid" "darkgreen")
+              )
+)
+(check-expect (barra-porcentagens 70 30 "orange" "yellow")
+              (above
+                  (rectangle 30 0 "solid" "gray")
+                  (rectangle 30 30 "solid" "yellow")
+                  (rectangle 30 70 "solid" "orange")
+              )
+)
+(check-expect (barra-porcentagens 60 15 "blue" "green")
+              (above
+                  (rectangle 30 25 "solid" "gray")
+                  (rectangle 30 15 "solid" "green")
+                  (rectangle 30 60 "solid" "blue")
+              )
+)
+(check-expect (barra-porcentagens 5 10 "black" "white")
+              (above
+                  (rectangle 30 85 "solid" "gray")
+                  (rectangle 30 10 "solid" "white")
+                  (rectangle 30 5 "solid" "black")
+              )
+)
+
+;; ==============================================================
+;; 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+;; ==============================================================
+;; exibe-estatisticas: String Número Número Número -> Imagem
+;; obj: Dados uma string e três números, correspondentes ao nome de 
+;;      um país, sua população e quantidade de pessoas vacinadas com 
+;;      a primeira e segunda dose, desenha uma mensagem relatando a
+;;      porcentagem de população vacinada e uma barra abaixo mostrando
+;;      a relação entre população e pessoas vacinadas com a primeira e 
+;;      segunda doses.
+;; Exemplos:
+;;      (exibe-estatisticas "México" 1000 0 0) = O programa irá gerar uma
+;;      mensagem "No país México foram vacinados 0% dos habitantes" juntamente
+;;      com um gráfico vazio (todo cinza).
+;;      (exibe-estatisticas "Brasil" 1000 500 500) = O programa irá gerar uma
+;;      mensagem "No país Brasil foram vacinados 50% dos habitantes" juntamente
+;;      com um gráfico metade cinza e metade laranja.
+;;      (exibe-estatisticas "Paquistão" 10 5 2) = O programa irá gerar uma
+;;      mensagem "No país Paquistão foram vacinados 50% dos habitantes" juntamente
+;;      com um gráfico 50% cinza, 20% laranja e 30% amarelo.
+
+;; Código
+(define (exibe-estatisticas pais populacao dose1 dose2)
+    (above
+        (text 
+            (vacinados pais populacao dose1)
+            12
+            "black"
+        )
+        (barra-porcentagens 
+            (calcula-porcentagem dose2 populacao)
+            (calcula-porcentagem (- dose1 dose2) populacao)
+            "orange" 
+            "yellow"
+        )
+        (beside
+            (beside
+                (rectangle 15 15 "solid" "orange")
+                (text "esquema vacinal completo" 12 "black")
+            )
+            (beside
+                (rectangle 15 15 "solid" "yellow")
+                (text "somente primeira dose" 12 "black")
+            )
+        )
+    )
+)
+
+;; Chamadas:
+(exibe-estatisticas "Turquia" 2000 500 100)
+(exibe-estatisticas "Japão" 5000 2500 2000)
+(exibe-estatisticas "Suiça" 5500 5500 0)

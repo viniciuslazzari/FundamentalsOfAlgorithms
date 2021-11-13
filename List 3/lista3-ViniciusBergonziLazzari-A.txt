@@ -1,0 +1,215 @@
+;;;;;;;;;;;; Vinícius Bergonzi Lazzari
+;;;;;;;;;;;; Lista 3
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 1 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Pi : Número -> Número
+
+;; Dado um número representando R-zero, calcula a propoção da população que 
+;; precisa ser imunizada para se ter imunidade coletiva.
+;; Exemplos: 
+;; (Pi 2) retorna 0.5
+;; (Pi 8) retorna 0.875
+;; (Pi 20) retorna 0.95
+
+;; Corpo da função:
+(define 
+    (Pi Rzero)
+    (- 1 (/ 1 Rzero))
+)
+
+;; Testes
+(check-expect (Pi 4) 0.75)
+(check-expect (Pi 10) 0.90)
+(check-expect (Pi 100) 0.99)
+
+;; imunidade-coletiva : String -> Número
+
+;; Dado o nome abreviado de uma lista de vírus, retorne qual é a menor porcentagem
+;; da população que precisa estar imunizada, para que se atinga a imunidade
+;; coletiva.
+;; Exemplos: 
+;; (imunidade-coletiva "orig") deve retornar 50
+;; (imunidade-coletiva "alfa") deve retornar 66.666...
+;; (imunidade-coletiva "delta") deve retornar 83.333...
+
+;; Código
+(define
+    (imunidade-coletiva nome)
+    (cond
+        ;; se o nome abreviado do vírus for "orig", retorna a mínima
+        ;; porcentagem para que se atinja a imunidade de rebanho para
+        ;; um R-zero de 2
+        [(string=? nome "orig")(* 100 (Pi 2))]
+        ;; se o nome abreviado do vírus for "alfa", retorna a mínima
+        ;; porcentagem para que se atinja a imunidade de rebanho para
+        ;; um R-zero de 3
+        [(string=? nome "alfa")(* 100 (Pi 3))]
+        ;; se o nome abreviado do vírus for "beta", retorna a mínima
+        ;; porcentagem para que se atinja a imunidade de rebanho para
+        ;; um R-zero de 4.5
+        [(string=? nome "beta")(* 100 (Pi 4.5))]
+        ;; se o nome abreviado do vírus for "gama", retorna a mínima
+        ;; porcentagem para que se atinja a imunidade de rebanho para
+        ;; um R-zero de 4.7
+        [(string=? nome "gama")(* 100 (Pi 4.7))]
+        ;; se o nome abreviado do vírus for "delta", retorna a mínima
+        ;; porcentagem para que se atinja a imunidade de rebanho para
+        ;; um R-zero de 6
+        [(string=? nome "delta")(* 100 (Pi 6))]
+        ;; se o nome abreviado do vírus for "sarampo", retorna a mínima
+        ;; porcentagem para que se atinja a imunidade de rebanho para
+        ;; um R-zero de 14
+        [(string=? nome "sarampo")(* 100 (Pi 14))]
+    )
+)
+
+;; Testes
+(check-within (imunidade-coletiva "beta") 77.77 0.01)
+(check-within (imunidade-coletiva "gama") 78.72 0.01)
+(check-within (imunidade-coletiva "sarampo") 92.85 0.01)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 2 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 
+;; eficacia: String Número -> Número
+
+;; Dada uma string e um número, representando, respectivamente
+;; o nome da vacina e o número de dias após a segunda dose, retorna 
+;; a eficácia da mesma.
+;; Exemplos: 
+;; (eficacia "A" 14) deve retornar 94
+;; (eficacia "A" 60) deve retornar 88
+;; (eficacia "B" 90) deve retornar 61
+
+;; Corpo da função:
+(define
+    (eficacia vacina dias)
+    (cond
+        ;; se a vacina for a A, executa a condicional em cima
+        ;; dos dados da vacina A
+        [(string=? "A" vacina)
+            (cond
+                ;; se a quantidade de dias após a segunda dose for
+                ;; igual a 14, retorna 94% de eficácia
+                [(= dias 14) 94]
+                ;; se a quantidade de dias após a segunda dose for
+                ;; igual a 30, retorna 90% de eficácia
+                [(= dias 30) 90]
+                ;; se a quantidade de dias após a segunda dose for
+                ;; igual a 60, retorna 88% de eficácia
+                [(= dias 60) 88]
+                ;; se a quantidade de dias após a segunda dose for
+                ;; igual a 90, retorna 78% de eficácia
+                [(= dias 90) 78]
+            )
+        ]
+        ;; se a vacina for a B, executa a condicional em cima
+        ;; dos dados da vacina B
+        [(string=? "B" vacina)
+            (cond
+                ;; se a quantidade de dias após a segunda dose for
+                ;; igual a 14, retorna 69% de eficácia
+                [(= dias 14) 69]
+                ;; se a quantidade de dias após a segunda dose for
+                ;; igual a 90, retorna 61% de eficácia
+                [(= dias 90) 61]
+            )
+        ]
+    )
+)
+
+;; Testes:
+(check-expect (eficacia "A" 30) 90)
+(check-expect (eficacia "A" 90) 78)
+(check-expect (eficacia "B" 14) 69)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 3 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Re: Número Número Número -> Número
+
+;; Dados três números, representando respectivamente R-zero,
+;; a proporção de pessoas vacinadas e a eficácia da vacina, retorna
+;; o número de reprodução efetiva.
+;; Exemplos: 
+;; (Re 0.8 1 0.85) deve retornar 0.12
+;; (Re 0.8 0.5 0.95) deve retornar 0.42. Comparando os dois casos, 
+;; é evidente que o primeiro caso é o mais eficaz.
+;; (Re 1 1 0) deve retornar 1
+
+;; Corpo da função:
+(define
+    (Re Rzero qtdVacinadas eficacia)
+    (* Rzero (- 1 (* qtdVacinadas eficacia)))
+)
+
+;; Testes:
+(check-expect (Re 0.5 1 0.95) 0.025)
+(check-expect (Re 0.7 0.8 0.55) 0.392)
+(check-expect (Re 0.4 1 1) 0)
+
+;; resposta: Número Número Número -> Número
+
+;; Dados três números, representando respectivamente R-zero,
+;; a proporção de pessoas vacinadas e a eficácia da vacina, retorna
+;; o número de reprodução efetiva caso a proporção de pessoas vacinadas 
+;; seja maior que 0.5 ou Pi caso contrário.
+;; Exemplos: 
+;; (resposta 0.30 2 0.95) deve retornar 0.5
+;; (resposta 0.5 1.5 1) deve retornar 0.3333...
+;; (resposta 0.8 0.8 0.4) deve retornar 0.544
+
+;; Corpo da função:
+(define
+    (resposta qtdVacinadas Rzero eficacia)
+    (cond
+        ;; se a proporção de pessoas vacinadas for menor ou igual
+        ;; a 0.5, retorna Pi
+        [(<= qtdVacinadas 0.5)(Pi Rzero)]
+        ;; se a proporção de pessoas vacinadas for maior que 0.5
+        ;; e menor ou igual a 1 retorna Re
+        [(<= qtdVacinadas 1)(Re Rzero qtdVacinadas eficacia)]
+    )
+)
+
+;; Testes:
+(check-expect (resposta 0.5 2.5 0.95) 0.6)
+(check-expect (resposta 0.7 0.8 0.55) 0.492)
+(check-expect (resposta 0.4 1 1) 0)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Exercício 4 ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; calcula-TMB: Número Número Número Número Boleano -> Número
+
+;; Dados quatro números e um boleano, representando respectivamente
+;; o peso em quilos, a altura em centímetros, a idade, um fator f e o
+;; sexo (verdadeiro para mulheres e falso para homens), retorna o TMB.
+;; Exemplos: 
+;; (calcula-TMB 70 170 18 1.35 false) deve retornar 2371.41
+;; (calcula-TMB 70 170 18 1.35 true) deve retornar 2090.34
+;; (calcula-TMB 80 150 24 1.40 true) deve retornar 2012.28
+
+;; Corpo da função:
+(define
+    (calcula-TMB peso altura idade f sexo)
+    (cond
+        ;; se sexo for true, usa a fórmula para o sexo feminino
+        ;; f(655 + (9.6 ∗ p) + (1.8 ∗ a) − (4.7 ∗ i))
+        [sexo (* f (+ 655 (* 9.6 peso) (* 1.8 altura) (* -4.7 idade)))]
+        ;; se sexo for false, usa a fórmula para o sexo masculino
+        ;; f(66.5 + (13.75 ∗ p) + (5.0 ∗ a) − (6.8 ∗ i))
+        [(not sexo) (* f (+ 66.5 (* 13.75 peso) (* 5.0 altura) (* -6.8 idade)))]
+    )
+)
+
+;; Testes:
+(check-expect (calcula-TMB 60 175 18 1.25 false) 2055.125)
+(check-expect (calcula-TMB 50 160 35 1.25 true) 1573.125)
+(check-expect (calcula-TMB 11 70 4 1.3 true) 1128.14)

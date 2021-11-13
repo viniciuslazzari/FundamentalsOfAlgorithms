@@ -1,0 +1,311 @@
+;; ========================================================================
+;; DEFINIÇÕES DE DADOS
+;; ========================================================================
+
+;; CONSTANTES:
+(define PULA_VEZ -1)
+(define COMPRA2 -2)
+(define INVERTE -3)
+(define CURINGA -5)
+(define CURINGA_COMPRA4 -4)
+
+;; -----------------
+;; TIPO CARTA:
+;; -----------------
+(define-struct carta (cor valor))
+;; Um elemento do conjunto Carta é
+;; (make-carta c v) onde
+;; c : String, é a cor da carta, que pode ser "azul", "verde", "amarelo", "vermelho" ou "preto" ou "livre"
+;; v : Número, é o valor da carta, que pode ser qualquer inteiro entre 0 e 9,
+;; ou um número negativo -1 (PulaVez), -2 (Compra2), -3 (Inverte),-4 (Compra4) ou -5 (Curinga)
+
+
+;; ========================================================================
+;; FUNÇÕES - Use se quiser
+;; ========================================================================
+
+;; jogada-válida? : Carta Carta -> Booleano
+;; Objetivo: Dada uma carta da mao e uma da mesa, nesta ordem,
+;; verifica se é possível a carta da mão, de acordo com as regras do UNO
+;; Exemplos:
+   ;; (jogada-válida? (make-carta "azul" 3) (make-carta "azul" 4))= #t
+   ;; (jogada-válida? (make-carta "azul" 3) (make-carta "preto" CURINGA_COMPRA4)) = #t
+   ;; (jogada-válida? (make-carta "azul" 3) (make-carta "vermelho" 4)) = #f
+(define (jogada-válida? carta-mao carta-mesa)
+   (cond
+         ;; se a carta da mão ou a da mesa for preta, a jogada é válida
+         [(or (string=? (carta-cor carta-mao) "preto") (string=? (carta-cor carta-mesa) "preto")) #t]
+         ;; se as duas cartas forem da mesma cor ou do mesmo tipo/valor, a jogada é válida
+         [(or (string=? (carta-cor carta-mesa)(carta-cor carta-mao))
+               (= (carta-valor carta-mesa) (carta-valor carta-mao))) #t]
+         ;; senão, a jogada é inválida
+         [else #f] ))
+
+;; desenha-carta : Carta -> Imagem
+;; Objetivo: A função cria uma imagem para a carta que é recebida de entrada
+;; Exemplos:
+   ;; (desenha-carta (make-carta "azul" 3) devolve a imagem da carta de UNO azul 3
+   ;; (desenha-carta (make-carta "preto" CURINGA_COMPRA4)) devolve a imagem da carta de UNO curinga compra4
+(define (desenha-carta carta)
+    (overlay ;; sobrepor:
+                   (desenha-texto (carta-valor carta)) ;; texto da carta,
+                   (circle 45 "solid" "white") ;; círculo branco,
+                   (rectangle 100 150 "solid" (cor carta)) ;; retângulo da cor da carta, e
+                   (rectangle 110 160 "outline" "black"))) ;; contorno preto
+
+;; desenha-texto: Número -> Imagem
+;; Dado um valor, desenha uma imagem de carta de UNO correspondendo a este valor
+;; Exemplos:
+   ;; (desenha-texto 3) devolve a imagem do número 3
+   ;; (desenha-texto CURINGA_COMPRA4)) devolve a imagem +4
+(define (desenha-texto valor)
+    (text (cond ;; escolher o símbolo a ser desenhado, dependendo do valor:
+                     [(= valor CURINGA_COMPRA4) "+4"]
+                     [(= valor COMPRA2) "+2"]
+                     [(= valor INVERTE) "«"]
+                     [(= valor PULA_VEZ) "Ø"]
+                     [(= valor CURINGA) "T"]
+                     [else (number->string valor)])
+          ;; o texto será desenhado em tamanho 70 em preto
+          70 "black"))
+
+;; cor : Carta -> String
+;; Objetivo: a função recebe uma carta UNO, e retorna a respectiva cor
+;; em ingles, ou seja, "blue", "green", "yellow", "red" ou "black".
+;; Exemplos:
+   ;; (cor? "azul") = "blue"
+   ;; (cor? "verde") = "green"
+   ;; (cor? "rosa") = "black"
+(define (cor c)
+   (cond
+            [(string=? "azul" (carta-cor c)) "blue"]
+            [(string=? "verde" (carta-cor c)) "green"]
+            [(string=? "vermelho" (carta-cor c)) "red"]
+            [(string=? "amarelo" (carta-cor c)) "yellow"]
+            [else "black"]))
+
+;; ========================================================================
+;; QUESTÕES
+;; =========================================================================
+
+;; Todas as funções recursivas devem ter o modelo da solução (pode haver mais casos,
+;; dependendo de como o problema está sendo solucionado):
+
+;; Dados ....
+;; Se <é o caso base da definição da lista> então <definir como resolver este caso>
+;; Se <não é o caso base>
+;; então <combinar>
+                     ;; <fazer algo com> <o primeiro elemento da lista>
+                     ;; <solucionar o problema para> <o resto da lista>
+
+;; ========================================================================
+;; QUESTÃO 1
+;; =========================================================================
+
+;;CARTAS CONSTANTES
+(define CARTA1 (make-carta "azul" INVERTE))
+(define CARTA2 (make-carta "verde" COMPRA2))
+(define CARTA3 (make-carta "vermelho" COMPRA2))
+(define CARTA4 (make-carta "amarelo" PULA_VEZ))
+(define CARTA5 (make-carta "preto" CURINGA))
+(define CARTA6 (make-carta "azul" 1))
+(define CARTA7 (make-carta "verde" 2))
+(define CARTA8 (make-carta "vermelho" 8))
+(define CARTA9 (make-carta "amarelo" 2))
+(define CARTA10 (make-carta "preto" CURINGA_COMPRA4))
+
+;; --------------------
+;; TIPO LISTA DE CARTAS:
+;; --------------------
+;; Uma ListaDeCartas é ou:
+;; 1. a lista vazia empty, ou
+;; 2. (cons carta ldc), onde
+;;    carta: Carta e
+;;    ldc: ListaDeCartas
+
+;;LISTAS DE CARTAS CONSTANTES
+(define LISTA-DE-CARTAS1 (cons CARTA1 (cons CARTA2 (cons CARTA3 (cons CARTA4 empty)))))
+(define LISTA-DE-CARTAS2 (cons CARTA10 (cons CARTA5 (cons CARTA1 empty))))
+(define LISTA-DE-CARTAS3 (cons CARTA6 (cons CARTA7 (cons CARTA8 (cons CARTA9 (cons CARTA1 empty))))))
+(define LISTA-DE-CARTAS4 (cons CARTA1 empty))
+
+;; -----------------
+;; TIPO JOGADOR:
+;; -----------------
+(define-struct jogador (nome mão pontos))
+;; Um elemento do conjunto Jogador é
+;; (make-jogador nome mão pontos) onde
+;; nome: String, é o nome do jogador
+;; mão: ListaDeCartas, é a mão do jogador, que pode conter qualquer conjunto finito de Cartas
+;; pontos: Número, é a pontuação do jogador 
+
+;;JOGADORES CONSTANTES
+(define JOGADOR1 (make-jogador "Vinícius" LISTA-DE-CARTAS1 80))
+(define JOGADOR2 (make-jogador "Júlia" LISTA-DE-CARTAS4 20))
+
+;; ========================================================================
+;; QUESTÃO 2
+;; ========================================================================
+;; Nesta questão você não deve incluir testes com check-expect, deixe apenas
+;; chamadas da sua função.
+
+;; desenha-cartas: ListaDeCartas -> Imagem
+;; Obj: Desenhar as cartas de uma lista de cartas.
+;; Dada uma lista de cartas L
+;; Se L é a lista vazia então devolver uma empty-image
+;; Senão colocar lado a lado
+;;                          o desenho da primeira carta da lista com 
+;;                          o desenho das cartas do resto da lista
+
+;;Corpo da função
+(define (desenha-cartas L)
+  (cond
+    [(empty? L) empty-image]
+    [else (beside (desenha-carta (first L)) (desenha-cartas (rest L)))]
+  )
+)
+
+(desenha-cartas LISTA-DE-CARTAS2)
+(desenha-cartas LISTA-DE-CARTAS3)
+
+;; ========================================================================
+;; QUESTÃO 3
+;; ========================================================================
+
+;; número-opções: Carta ListaDeCartas -> Número
+;; Obj: Retornar a quantidade de opções de jogadas válidas em uma lista de cartas 
+;; Dada uma lista de cartas L
+;; Se L é a lista vazia então devolver 0
+;; Senão somar
+;;            um, se a primeira carta da lista for uma jogada válida para 
+;;            a carta da mesa, senão, somar zero, com o NÚMERO DE OPÇÕES 
+;;            DE CARTAS VÁLIDAS do resto da lista L
+;; Exemplos:
+;; (número-opções CARTA6 LISTA-DE-CARTAS3) = 2
+;; (número-opções CARTA7 LISTA-DE-CARTAS2) = 2
+;; (número-opções CARTA1 LISTA-DE-CARTAS1) = 1
+
+;; Corpo da função
+(define (número-opções C L)
+  (cond
+    ;; Se a lista estiver vazia, retorna 0
+    [(empty? L) 0]
+    ;; Senão
+    [else (+
+      (cond
+         ;; Se a jogada for válida, soma 1
+         [(jogada-válida? C (first L)) 1]
+         ;; Senão, soma 0
+         [else 0]
+      )
+      (número-opções C (rest L)))
+    ]
+  )
+)
+
+;; Teste
+(check-expect (número-opções CARTA2 LISTA-DE-CARTAS4) 0)
+(check-expect (número-opções CARTA1 LISTA-DE-CARTAS2) 3)
+(check-expect (número-opções CARTA5 LISTA-DE-CARTAS3) 5)
+
+;; ========================================================================
+;; QUESTÃO 4
+;; ========================================================================
+
+;; retorna-pontos : Carta -> Número
+;; Objetivo: A função recebe um elemento do tipo Carta e retorna a pontuação
+;;           dessa carta
+;; Exemplos:
+;; (retorna-pontos CARTA1) = 20
+;; (retorna-pontos CARTA5) = 50
+;; (retorna-pontos CARTA6) = 1
+
+;; Corpo da função
+(define (retorna-pontos carta)
+  (cond
+    ;; Se o valor da carta for igual ao valor do CURINGA ou do CURINGA_COMPRA4, retorna 50
+    [(or (= (carta-valor carta) CURINGA) (= (carta-valor carta) CURINGA_COMPRA4)) 50]
+    ;; Se o valor da carta for igual ao valor do PULA_VEZ ou do COMPRA2 ou do INVERTE, retorna 20
+    [(or (= (carta-valor carta) PULA_VEZ) (= (carta-valor carta) COMPRA2) (= (carta-valor carta) INVERTE)) 20]
+    ;; Senão, retorna o valor da carta
+    [else (carta-valor carta)]
+  )
+)
+
+;; Testes
+(check-expect (retorna-pontos CARTA7) 2)
+(check-expect (retorna-pontos CARTA10) 50)
+(check-expect (retorna-pontos CARTA3) 20)
+
+;; soma-pontos: ListaDeCartas -> Número
+;; Obj: Retornar a soma dos pontos de uma lista de cartas.
+;; Dada uma lista de cartas L
+;; Se L é a lista vazia então devolver 0
+;; Senão somar o valor da primeira carta da lista ao VALOR das cartas do resto da lista L
+;; Exemplos:
+;; (soma-pontos LISTA-DE-CARTAS1) = 80
+;; (soma-pontos LISTA-DE-CARTAS2) = 120
+
+;; Corpo da função
+(define (soma-pontos L)
+  (cond
+    ;; Se a lista estiver vazia, retorna 0
+    [(empty? L) 0]
+    ;; Senão
+    [else 
+      (+ 
+        ;; Soma o valor da primeira carta da lista
+        (retorna-pontos (first L))
+        ;; Com o valor das cartas do resto da lista
+        (soma-pontos (rest L))
+      )
+    ]
+  )
+)
+
+;; Testes
+(check-expect (soma-pontos LISTA-DE-CARTAS3) 33)
+(check-expect (soma-pontos LISTA-DE-CARTAS4) 20)
+
+;; ========================================================================
+;; QUESTÃO 5
+;; ========================================================================
+
+;; Um elemento do conjunto Resposta é
+;; 1. uma Carta, ou
+;; 2. uma String
+
+;; define-jogada: Jogador Carta -> Resposta
+;; Obj: Retornar a primeira carta válida da mão do jogador ou uma mensagem
+;; "Impossível jogar carta" caso não possuam cartas válidas.
+;; Dado um Jogador J e uma carta C
+;; Se a mão do jogador é uma lista vazia então devolver "Impossível jogar carta"
+;; Senão
+;;      retornar a primeira carta da mão, caso ela for uma jogada válida, senão,
+;;      retornar a primeira carta válida da mão
+;; Exemplos:
+;; (define-jogada JOGADOR1 CARTA9) = (make-carta "amarelo" -1)
+;; (define-jogada JOGADOR1 CARTA10) = (make-carta "azul" -3)
+;; (define-jogada JOGADOR2 CARTA7) = "Impossível jogar carta"
+
+;; Corpo da função
+(define (define-jogada J C)
+  (cond
+    ;; Se a mão do jogador for uma lista estiver vazia, retorna "Impossível jogar carta"
+    [(empty? (jogador-mão J)) "Impossível jogar carta"]
+    ;; Senão
+    [else 
+      (cond
+        ;; Se a jogada for válida, devolve a primeira carta
+        [(jogada-válida? C (first (jogador-mão J))) (first (jogador-mão J))]
+        ;; Senão, devolve a primeira carta válida do resto da mão
+        [else (define-jogada (make-jogador (jogador-nome J) (rest (jogador-mão J)) (jogador-pontos J)) C)]
+      )
+    ]
+  )
+)
+
+;; Testes
+(check-expect (define-jogada JOGADOR2 CARTA9) "Impossível jogar carta")
+(check-expect (define-jogada JOGADOR1 CARTA3) (make-carta "verde" -2))
+(check-expect (define-jogada JOGADOR2 CARTA5) (make-carta "azul" -3))

@@ -1,0 +1,382 @@
+;; Nome: Vinícius Bergonzi Lazzari
+
+;; Funções pré-definidas:
+
+;; flip-horizontal: Imagem -> Imagem
+;; Dada uma imagem, gera uma nova imagem espelhando a imagem original horizontalmente.
+
+;; line: Número Número String -> Imagem
+;; Dados as as coordenadas x e y de um ponto e uma cor, desenha uma reta desta cor
+;; ligando este ponto ao ponto (0,0).
+
+;; ==========================================================================
+;; TIPO FIGURA:
+;; ===========
+(define-struct figura (x y altura cor))
+;; Um elemento do conjunto Figura é
+;; (make-figura x y a c), onde
+;; x: Número, é a coordenada x do centro da figura
+;; y: Número, é a coordenada y do centro da figura
+;; a : Número, é a altura da figura
+;; c : Número, número que representa a cor da figura, de acordo com a função gera-cor
+
+;; ========================
+;; FUNÇÃO GERA-COR:
+;; ========================
+;; gera-cor : Número -> String
+;; Dado um número positivo, devolve uma de 5 cores: "red", "blue", "green", "yellow" ou "cyan".
+;; Exemplos:
+;; (gera-cor 3) = "yellow"
+;; (gera-cor 55) = "red"
+(define (gera-cor n)
+     (cond
+           [(= (remainder n 5) 0) "red"]
+           [(= (remainder n 5) 1) "blue"]
+           [(= (remainder n 5) 2) "green"]
+           [(= (remainder n 5) 3) "yellow"]
+           [(= (remainder n 5) 4) "cyan"]))
+
+;; ========================
+;; FUNÇÃO DESENHA-TRIANGULO:
+;; ========================
+;; desenha-triangulo : Número String -> Imagem
+;; Obj.: Dados um tamanho de lado e uma cor, desenha um triângulo.
+;; Exemplos:
+;; (desenha-triangulo 20 "red") = .
+;; (desenha-triangulo 50 "darkgreen") = .
+(define (desenha-triangulo lado cor)
+          (triangle lado "outline" cor))
+
+;; ==========================================================================
+;; Função sierpinski
+;; ==========================================================================
+
+;; sierpinski: Número String -> Imagem
+;; Obj: Dados o tamanho do lado e uma cor, desenha um triângulo de Sierpinski
+;; desta cor cujo lado do triângulo externo é o lado passado como argumento.
+;; Exemplos:
+;; (sierpinksi 40 "red") => desenha um triângulo de Sierpinski de lado externo 40 na cor vermelha
+;; (sierpinksi 100 "blue") => desenha um triângulo de Sierpinski de lado externo 100 na cor azul
+
+(define (sierpinski lado cor)
+   (cond
+        ;; caso trivial: se o lado for muito pequeno, desenhar um triângulo com o lado dado
+        [(<= lado 5) (desenha-triangulo lado cor)]
+        ;; senão
+        [else (local
+                      ( ;; desenha um triângulo de sierpinksi com a metade do tamanho do lado
+                        ;; e dá o nome de TRIANGULO para este desenho:
+                        (define TRIANGULO (sierpinski (/ lado 2) cor))
+                       )
+                       ;; e monta a imagem do triângulo de sierpinski colocando um TRIANGULO
+                       ;; acima de dois outros TRIANGULOs:
+                       (above TRIANGULO
+                                   (beside TRIANGULO TRIANGULO)))]))
+;; Argumentação de terminação:
+;; Este programa sempre termina porque:
+;; (a) Existe um caso base (sem recursão) que é quando o tamanho do lado é menor ou igual a 5.
+;; Neste caso, o programa simplesmente desenha um triângulo com este lado, na cor selecionada.
+;; (b) Cada chamada recursiva é realizada tendo como argumento a metade do lado,
+;; que é um número estritamente menor que o lado, e portanto mais próximo
+;; de se tornar menor que 5 (lembre que a chamada recursiva só ocorre se o lado for >=5).
+;; (c) As funções <=, above, beside e cond terminam, pois são pré-definidas da linguagem.
+;; A função desenha-triangulo termina, pois somente usa funções pré-definidas e não tem laços.
+
+;; ==========================================================================
+;; QUESTÕES
+;; ==========================================================================
+
+;; ==========================================================================
+;; 1: Função sierpinski-carpet
+;; ==========================================================================
+
+;; ========================
+;; FUNÇÃO DESENHA-QUADRADO:
+;; ========================
+;; desenha-quadrado : Número String -> Imagem
+;; Obj.: Dados um tamanho de lado e uma cor, desenha um quadrado.
+;; Exemplos:
+;; (desenha-triangulo 20 "red") = .
+;; (desenha-triangulo 50 "darkgreen") = .
+(define (desenha-quadrado lado cor)
+          (square lado "solid" cor))
+
+;; sierpinski-carpet: Número String -> Imagem
+;; Obj: Dados o tamanho do lado e uma cor, desenha um carpete de Sierpinski
+;; Exemplos:
+;; (sierpinski-carpet 100 "blue") => desenha um carpete de Sierpinski de lado externo 100 na cor azul
+;; (sierpinski-carpet 20 "yellow") => desenha um carpete de Sierpinski de lado externo 20 na cor amarela
+
+;; Definição da função
+(define (sierpinski-carpet lado cor)
+  (cond
+    ;; se o lado for igual a 5, interrompe a recursividade e apenas desenha o quadrado
+    [(<= lado 5) (desenha-quadrado lado cor)]
+    ;; senão
+    [else
+      ;; desenha um carpete de Sierpinksi com um terço do tamanho do lado
+      ;; e dá o nome de QUAD para este desenho; e desenha um quadrado todo
+      ;; branco com um terço do tamanho do lado e dá o nome de QUAD-BRANCO
+      (local 
+        (
+          (define QUAD (sierpinski-carpet (/ lado 3) cor))
+          (define QUAD-BRANCO (desenha-quadrado (/ lado 3) "white"))
+        )
+        ;; montar uma imagem com as seguinte imagens, uma acima da outra
+        (above
+          ;; três carpetes de sierpinski com tamanho n-1, um ao lado do outro
+          (beside
+            QUAD
+            QUAD
+            QUAD
+          )
+          ;; dois carpetes de sierpinski com tamanho n-1 em ambos lados de um carpete preto com tamanho n-1
+          (beside
+            QUAD
+            QUAD-BRANCO
+            QUAD
+          )
+          ;; três carpetesde sierpinski com tamanho n-1, um ao lado do outro
+          (beside
+            QUAD
+            QUAD
+            QUAD
+          )
+        )
+      )
+    ]
+  )
+)
+
+;; Argumentação de terminação:
+;; Este programa sempre termina porque:
+;; (a) Existe um caso base (sem recursão) que é quando o tamanho do lado é menor ou igual a 5.
+;; Neste caso, o programa simplesmente desenha um quadrado com este lado, na cor selecionada.
+;; (b) Cada chamada recursiva é realizada tendo como argumento um terço do lado,
+;; que é um número estritamente menor que o lado, e portanto mais próximo
+;; de se tornar menor que 5.
+;; (c) As funções <=, above, beside e cond terminam, pois são pré-definidas da linguagem.
+;; A função desenha-quadrado termina, pois somente usa funções pré-definidas e não tem laços.
+
+;; Exemplos de chamadas da função sierpinski-carpet:
+(sierpinski-carpet 200 "black")
+(sierpinski-carpet 5 "red")
+(sierpinski-carpet 300 "yellow")
+
+;; ==========================================================================
+;; 2: Função desenha-sierpinski-carpet
+;; ==========================================================================
+
+;; desenha-sierpinski-carpet: Figura -> Imagem
+;; Objetivo: Dada uma figura, desenha um tapete de sierpinski usando a altura e cor da figura.
+;; Exemplos:
+;; (desenha-sierpinski-carpet (make-figura 5 5 300 3)) = desenha um carpete de Sierpinski de lado externo 300 na cor amarela
+;; (desenha-sierpinski-carpet (make-figura 5 5 90 5)) = desenha um carpete de Sierpinski de lado externo 90 na cor vermelha
+
+;; Definição da função
+(define (desenha-sierpinski-carpet figura)
+  (sierpinski-carpet (figura-altura figura) (gera-cor (figura-cor figura)))
+)
+
+;; Exemplos
+(desenha-sierpinski-carpet (make-figura 5 5 20 4))
+(desenha-sierpinski-carpet (make-figura 5 10 150 1))
+(desenha-sierpinski-carpet (make-figura 10 50 200 5))
+
+;; ==========================================================================
+;; 3: Função desenha-boneco
+;; ==========================================================================
+
+;; desenha-boneco: Figura -> Imagem
+;; Objetivo: Dada uma figura, desenha um boneco com a altura e cor dadas.
+;; Exemplos:
+;; (desenha-boneco (make-figura 0 0 30 3)) = desenha um boneco com altura 30 na cor amarela.
+;; (desenha-boneco (make-figura 0 0 50 1)) = desenha um boneco com altura 50 na cor azul.
+
+;; Definição da função
+(define (desenha-boneco fig)
+  (local
+    (
+      (define TAM (figura-altura fig))
+      (define COR (gera-cor (figura-cor fig)))
+      (define UN (/ TAM 10))
+      (define CABECA (circle UN "solid" COR))
+      (define CORPO (line 0 (* 3 UN) COR))
+      (define BRACO-DIR (line (* 2 UN) (* 1.5 UN) COR))
+      (define BRACO-ESQ (flip-horizontal BRACO-DIR))
+      (define PERNA-DIR (line (* 2 UN) (* -1.5 UN) COR))
+      (define PERNA-ESQ (flip-horizontal PERNA-DIR))
+    )
+    (above
+      CABECA
+      (beside BRACO-DIR CORPO BRACO-ESQ)
+      (beside PERNA-DIR PERNA-ESQ)
+    )
+  )
+)
+
+;; Exemplos
+(desenha-boneco (make-figura 5 5 200 2))
+(desenha-boneco (make-figura 30 1 50 5))
+(desenha-boneco (make-figura 5 0 100 1))
+
+;; ==========================================================================
+;; 4: Função desenha-figuras
+;; ==========================================================================
+
+;; ==============
+;; TIPO CENA:
+;; ==============
+;; Uma Cena (Scene) pode ser
+;; 1. vazia (empty-scene larg alt), onde
+;;   larg: Número,
+;;   alt: Número
+;; ou
+;; 2.(place-image img x y cena), onde
+;;   img: Imagem
+;;   x: Número
+;;   y: Número
+;;   cena: Cena
+
+;; desenha-figuras: (Figura -> Imagem) Figura -> Imagem
+;; Objetivo: Dada uma função que desenha uma figura e uma figura, desenha essa figura em uma cena, variando algum de seus elementos até que uma condição de terminação seja encontrada.
+;; Exemplos:
+;; (desenha-figuras desenha-boneco (make-figura 200 200 50 1)) = desenhará n bonecos na diagonal, começando com um boneco azul de tamanho 50 na posição (200, 200) da tela, variando sua posição, tamanho e cor, até que um dos bonecos possua tamanho menor ou igual a 5 ou a cor vermelha.
+;; (desenha-figuras desenha-boneco (make-figura 100 100 75 0)) = desenhará apenas um boneco vermelho, de tamanho 75 na posição (100, 100) da cena.
+;; (desenha-figuras desenha-boneco (make-figura 100 100 5 1)) = desenhará apenas um boneco azul, de tamanho 5 na posição (100, 100) da cena.
+
+;;Definição da função
+(define (desenha-figuras desenha figura)
+  ;; Se
+  (cond
+    ;; Ou o tamanho da figura for menor ou igual a 5
+    ;; Ou a cor da figura for vermelho
+    ;; Apenas desenha a figura
+    [(or 
+        (<= (figura-altura figura) 5)
+        (string=? (gera-cor (figura-cor figura)) "red")
+      )
+      (place-image
+        (desenha figura)
+        (figura-x figura)
+        (figura-y figura)
+        (empty-scene 400 400)
+      )
+    ]
+    ;; Senão, desenha uma cena com a figura e as outras figuras, 
+    ;; variando sua posição, tamanho e cor
+    [else
+      (place-image
+        (desenha figura)
+        (figura-x figura)
+        (figura-y figura)
+        (desenha-figuras 
+          desenha 
+          (make-figura 
+            (+ (figura-x figura) 20)
+            (+ (figura-y figura) 15)
+            (- (figura-altura figura) 10)
+            (random 10)
+          )
+        )
+      )
+    ]
+  )
+)
+
+;; Argumentação de terminação:
+;; Este programa sempre termina porque:
+;; (a) Existe um caso base (sem recursão) que é quando o tamanho do boneco é menor ou igual a 5.
+;; Neste caso, o programa simplesmente desenha um boneco com este tamanho, na cor e posição selecionadas.
+;; (a) Existe um caso base (sem recursão) que é quando a cor do boneco é vermelha.
+;; Neste caso, o programa simplesmente desenha um boneco com o tamanho e posições desejadas, na cor vermelha.
+;; (b) Cada chamada recursiva é realizada tendo como argumento:
+;; x aumenta em 20,
+;; y aumenta em 15,
+;; o tamanho diminui em 10,
+;; a cor é randomizada,
+;; Desse forma, caso a cor não se torne vermelha de maneira rápida, como o tamanho está descescendo em 10 a
+;; cada iteração, está se tornando mais perto de terminação onde o tamanho é menor ou igual a 5, encerrando
+;; assim o programa.
+;; (c) As funções cond, or, <=, string=?, place-image, empty-scene, make, +, - e random terminam, pois são pré-definidas da linguagem.
+;; A função gera-cor termina, pois somente usa funções pré-definidas e não tem laços.
+;; A função desenha termina, pois somente usa funções pré-definidas e não tem laços.
+
+;; Exemplos
+(desenha-figuras desenha-boneco (make-figura 5 50 200 2))
+(desenha-figuras desenha-boneco (make-figura 350 60 100 0))
+(desenha-figuras desenha-boneco (make-figura 50 200 50 4))
+
+;; ==========================================================================
+;; 5: Função desenha-figuras-gen
+;; ==========================================================================
+
+;; (a) Critérios de fim e funções de movimentação:
+
+;; (b) função desenha-figuras-gen:
+
+;; (c) Argumentação da terminação das chamadas de exemplo:
+
+;; ==========================================================================
+;; 6: Função sierpinski-carpet-color
+;; ==========================================================================
+
+;; sierpinski-carpet: Número String -> Imagem
+;; Obj: Dados o tamanho do lado e uma cor, desenha um carpete de Sierpinski randomizando suas cores
+;; Exemplos:
+;; (sierpinski-carpet-color 150 "blue") = desenha um carpete de Sierpinski de lado externo 150 com cores aleatórias
+;; (sierpinski-carpet-color 30 "yellow") = desenha um carpete de Sierpinski de lado externo 30 com cores aleatórias
+
+;; Definição da função
+(define (sierpinski-carpet-color lado cor)
+  (cond
+    ;; se o lado for igual a 5, interrompe a recursividade e apenas desenha o quadrado com a cor aleatória
+    [(<= lado 5) (desenha-quadrado lado (gera-cor (random 10)))]
+    ;; senão
+    [else
+      ;; desenha um carpete de Sierpinksi com um terço do tamanho do lado
+      ;; e cor randomizada e dá o nome de QUAD para este desenho
+      (local 
+        (
+          (define QUAD (sierpinski-carpet-color (/ lado 3) (gera-cor (random 10))))
+        )
+        ;; montar uma imagem com as seguinte imagens, uma acima da outra
+        (above
+          ;; três carpetes de sierpinski com tamanho n-1, um ao lado do outro
+          (beside
+            QUAD
+            QUAD
+            QUAD
+          )
+          ;; dois carpetes de sierpinski com tamanho n-1 em ambos lados de um carpete com cor randomizada de tamanho n-1
+          (beside
+            QUAD
+            (desenha-quadrado (/ lado 3) (gera-cor (random 10)))
+            QUAD
+          )
+          ;; três carpetesde sierpinski com tamanho n-1, um ao lado do outro
+          (beside
+            QUAD
+            QUAD
+            QUAD
+          )
+        )
+      )
+    ]
+  )
+)
+
+;; Argumentação de terminação:
+;; Este programa sempre termina porque:
+;; (a) Existe um caso base (sem recursão) que é quando o tamanho do lado é menor ou igual a 5.
+;; Neste caso, o programa simplesmente desenha um quadrado com este lado, na cor selecionada.
+;; (b) Cada chamada recursiva é realizada tendo como argumento um terço do lado,
+;; que é um número estritamente menor que o lado, e portanto mais próximo
+;; de se tornar menor que 5.
+;; (c) As funções <=, above, beside e cond terminam, pois são pré-definidas da linguagem.
+;; A função desenha-quadrado termina, pois somente usa funções pré-definidas e não tem laços.
+
+;; Exemplos
+(sierpinski-carpet-color 200 "blue")
+(sierpinski-carpet-color 50 "red")
+(sierpinski-carpet-color 100 "yellow")

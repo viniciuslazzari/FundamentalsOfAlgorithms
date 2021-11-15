@@ -238,7 +238,7 @@
 ;;   y: Número
 ;;   cena: Cena
 
-;; desenha-figuras: (Figura -> Imagem) Figura -> Imagem
+;; desenha-figuras: (Figura -> Imagem) Figura -> Cena
 ;; Objetivo: Dada uma função que desenha uma figura e uma figura, desenha essa figura em uma cena, variando algum de seus elementos até que uma condição de terminação seja encontrada.
 ;; Exemplos:
 ;; (desenha-figuras desenha-boneco (make-figura 200 200 50 1)) = desenhará n bonecos na diagonal, começando com um boneco azul de tamanho 50 na posição (200, 200) da tela, variando sua posição, tamanho e cor, até que um dos bonecos possua tamanho menor ou igual a 5 ou a cor vermelha.
@@ -313,9 +313,217 @@
 
 ;; (a) Critérios de fim e funções de movimentação:
 
+;; CRITÉRIOS DE FIM
+
+;; cor-azul?: Figura -> Boleano
+;; Obj: Dada uma figura, retorna se a mesma é da cor azul.
+;; Exemplos:
+;; (cor-azul? (make-figura 10 10 50 6)) = true
+;; (cor-azul? (make-figura 5 20 100 2) = false
+
+;; Definição da função
+(define (cor-azul? figura)
+  (string=? (gera-cor (figura-cor figura)) "blue")
+)
+
+;; Testes
+(check-expect (cor-azul? (make-figura 0 0 0 5)) false)
+(check-expect (cor-azul? (make-figura 0 0 0 11)) true)
+
+;; altura-menor-7?: Figura -> Boleano
+;; Obj: Dada uma figura, retorna se a mesma tem altura menor que 7.
+;; Exemplos:
+;; (altura-menor-7? (make-figura 0 0 7 "yellow")) = false
+;; (altura-menor-7? (make-figura 100 100 5 "blue")) = true
+
+;; Definição da função
+(define (altura-menor-7? figura)
+  (< (figura-altura figura) 7)
+)
+
+;; Testes
+(check-expect (altura-menor-7? (make-figura 50 50 7 1)) false)
+(check-expect (altura-menor-7? (make-figura 0 0 10 5)) false)
+(check-expect (altura-menor-7? (make-figura 100 20 5 58)) true)
+
+;; x-menor-50?: Figura -> Boleano
+;; Obj: Dada uma figura, retorna se a posição x da mesma é menor que 300.
+;; Exemplos:
+;; (x-menor-50? (make-figura 51 0 5 "yellow")) = false
+;; (x-menor-50? (make-figura 49 0 10 "cyan")) = true
+
+;; Definição da função
+(define (x-menor-50? figura)
+  (< (figura-x figura) 50)
+)
+
+;; Testes
+(check-expect (x-menor-50? (make-figura 50 0 5 0)) false)
+(check-expect (x-menor-50? (make-figura 55 0 5 0)) false)
+(check-expect (x-menor-50? (make-figura 49 0 5 0)) true)
+
+;; FUNÇÕES DE ALTERAÇÃO
+
+;; aumenta-cor: Figura -> Figura
+;; Obj: Dada uma figura, soma 6 a sua cor e aumenta seu y em 20.
+;; Exemplos:
+;; (aumenta-cor (make-figura 300 300 20 5)) = (make-figura 300 320 20 11)
+;; (aumenta-cor (make-figura 200 200 10 0)) = (make-figura 200 220 10 6)
+
+;; Definição da função
+(define (aumenta-cor figura)
+  (make-figura 
+    (figura-x figura)
+    (+ (figura-y figura) 20)
+    (figura-altura figura)
+    (+ (figura-cor figura) 6)
+  )
+)
+
+;; Testes
+(check-expect (aumenta-cor (make-figura 0 0 13 6)) (make-figura 0 20 13 12))
+(check-expect (aumenta-cor (make-figura 12 12 12 9)) (make-figura 12 32 12 15))
+(check-expect (aumenta-cor (make-figura 58 54 0 0)) (make-figura 58 74 0 6))
+
+;; divide-pos: Figura -> Figura
+;; Obj: Dada uma figura, divide sua posição y e x por 2.
+;; Exemplos:
+;; (divide-pos (make-figura 78 98 0 4)) = (make-figura 39 49 0 4)
+;; (divide-pos (make-figura 1 5 10 0)) = (make-figura 0.5 2.5 10 0)
+
+;; Definição da função
+(define (divide-pos figura)
+  (make-figura 
+    (/ (figura-x figura) 2)
+    (/ (figura-y figura) 2)
+    (figura-altura figura)
+    (figura-cor figura)
+  )
+)
+
+;; Testes
+(check-expect (divide-pos (make-figura 100 100 100 100)) (make-figura 50 50 100 100))
+(check-expect (divide-pos (make-figura 25 254 14 95)) (make-figura 12.5 127 14 95))
+(check-expect (divide-pos (make-figura 0 15 0 0)) (make-figura 0 7.5 0 0))
+
+;; diminui-altura: Figura -> Figura
+;; Obj: Dada uma figura, diminui sua altura em 1 e sua posição x em 10.
+;; Exemplos:
+;; (diminui-altura (make-figura 3 5 7 13)) = (make-figura -7 5 6 13)
+;; (diminui-altura (make-figura 12 9 8 9)) = (make-figura 2 9 7 9)
+
+;; Definição da função
+(define (diminui-altura figura)
+  (make-figura 
+    (- (figura-x figura) 10)
+    (figura-y figura)
+    (- (figura-altura figura) 1)
+    (figura-cor figura)
+  )
+)
+
+;; Testes
+(check-expect (diminui-altura (make-figura 10 10 10 4)) (make-figura 0 10 9 4))
+(check-expect (diminui-altura (make-figura 13 5 7 9)) (make-figura 3 5 6 9))
+(check-expect (diminui-altura (make-figura 78 1 1 2)) (make-figura 68 1 0 2))
+
 ;; (b) função desenha-figuras-gen:
 
+;; desenha-figuras-gen: (Figura -> Imagem) Figura (Figura -> Boolean) (Figura -> Figura) -> Cena
+;; Obj: Dadas uma função para desenhar figuras, uma figura inicial, um critério de termino e uma função para
+;; alterar figuras, desenha uma cena com essa figuras até que um critério de fim seja atingido.
+
+;; Definição da função
+(define (desenha-figuras-gen desenha figura criterio altera)
+  (cond
+    ;; Se a figura atende ao critério de término
+    [(criterio figura)
+      ;; Apenas desenha a figura
+      (place-image
+        (desenha figura)
+        (figura-x figura)
+        (figura-y figura)
+        (empty-scene 400 400)
+      )
+    ]
+    ;; Senão
+    [else
+      ;; Desenha a figura usando a função de parâmetro, alterando a próxima figura a ser desenhada usando a
+      ;; outra função por parâmetro
+      (place-image
+        (desenha figura)
+        (figura-x figura)
+        (figura-y figura)
+        (desenha-figuras-gen desenha (altera figura) criterio altera)
+      )
+    ]
+  )
+)
+
+;; Exemplos
+(desenha-figuras-gen desenha-sierpinski-carpet (make-figura 200 200 20 3) altura-menor-7? diminui-altura)
+(desenha-figuras-gen desenha-sierpinski-carpet (make-figura 300 150 25 7) cor-azul? aumenta-cor)
+(desenha-figuras-gen desenha-boneco (make-figura 100 400 50 0) x-menor-50? divide-pos)
+(desenha-figuras-gen desenha-boneco (make-figura 400 200 100 4) x-menor-50? diminui-altura)
+
 ;; (c) Argumentação da terminação das chamadas de exemplo:
+
+;; Chamada da função 1
+;;   Argumentação de terminação:
+;;   Este programa sempre termina porque:
+;;   (a) Existe um caso base (sem recursão) que é quando a altura o do tapete é menor do que 7.
+;;   Neste caso, o programa simplesmente desenha um tapete com este tamanho.
+;;   (b) Cada chamada recursiva é realizada tendo como argumento:
+;;   a altura diminui em 1 e a posição x diminui em 10
+;;   Desse forma, como a altura sempre esta sendo diminuida em 1, em algum momento ela se tornará menor que 7, pois a cada iteração
+;;   a altura está mais perto do caso base.
+;;   (c) A função desenha-sierpinski-carpet termina, como já argumentado na definição da função sierpinski-carpet.
+;;   A função make-figura, place-image, cond e empty-scene terminam, pois são nativas da linguagem.
+;;   A função altura-menor-7? termina, pois somente usa funções pré-definidas e não tem laços.
+;;   A função diminui-altura termina, pois somente usa funções pré-definidas e não tem laços.
+
+;; Chamada da função 2
+;;   Argumentação de terminação:
+;;   Este programa sempre termina porque:
+;;   (a) Existe um caso base (sem recursão) que é quando a cor o do tapete é igual a azul.
+;;   Neste caso, o programa simplesmente desenha um tepete com esta cor.
+;;   (b) Cada chamada recursiva é realizada tendo como argumento:
+;;   a cor aumenta em 6 e a posição y diminui em 20
+;;   Dessa forma, como a cor sempre aumenta em 6, a cor é sempre aumentada em 1, pois a função gera cor considera o resto de uma divisão
+;;   por 5, que quando adicionada +6, sempre retorna um resto de 1, aumentando a cor em uma unidade, fazendo com que a mesma sempre se
+;;   torne azul em algum momento.
+;;   (c) A função desenha-sierpinski-carpet termina, como já argumentado na definição da função sierpinski-carpet.
+;;   A função make-figura, place-image, cond e empty-scene terminam, pois são nativas da linguagem.
+;;   A função cor-azul? termina, pois somente usa funções pré-definidas e não tem laços.
+;;   A função aumenta-cor termina, pois somente usa funções pré-definidas e não tem laços.
+
+;; Chamada da função 3
+;;   Argumentação de terminação:
+;;   Este programa sempre termina porque:
+;;   (a) Existe um caso base (sem recursão) que é quando a posição x do boneco é menor que 50.
+;;   Neste caso, o programa simplesmente desenha um boneco nesta posição.
+;;   (b) Cada chamada recursiva é realizada tendo como argumento:
+;;   Diminui a posição x e y por 2.
+;;   Dessa forma, como a posição esta sempre sendo dividida por 2, ela sempre será menor que 50 em algum momento, pois a cada iteração ela
+;;   fica mais perto do caso base.
+;;   (c) A função desenha-boneco termina, pois somente usa funções pré-definidas e não tem laços.
+;;   A função make-figura, place-image, cond e empty-scene terminam, pois são nativas da linguagem.
+;;   A função x-menor-50? termina, pois somente usa funções pré-definidas e não tem laços.
+;;   A função divide-pos termina, pois somente usa funções pré-definidas e não tem laços.
+
+;; Chamada da função 4
+;;   Argumentação de terminação:
+;;   Este programa sempre termina porque:
+;;   (a) Existe um caso base (sem recursão) que é quando a posição x do boneco é menor que 50.
+;;   Neste caso, o programa simplesmente desenha um boneco nesta posição.
+;;   (b) Cada chamada recursiva é realizada tendo como argumento:
+;;   Diminui a altura do boneco em 1 e sua posição x em 10.
+;;   Dessa forma, como a posição x do boneco está sendo diminuida em 10 unidade a cada iteração, ela esta ficando mais próxima do baso base,
+;;   provando assim que o programa sempre terminará.
+;;   (c) A função desenha-boneco termina, pois somente usa funções pré-definidas e não tem laços.
+;;   A função make-figura, place-image, cond e empty-scene terminam, pois são nativas da linguagem.
+;;   A função x-menor-50? termina, pois somente usa funções pré-definidas e não tem laços.
+;;   A função diminui-altura termina, pois somente usa funções pré-definidas e não tem laços.
 
 ;; ==========================================================================
 ;; 6: Função sierpinski-carpet-color
